@@ -1,0 +1,52 @@
+{
+  "name": "spring-backend-dev",
+  "dockerComposeFile": [
+    "../../docker-compose.yml",
+    "../../docker-compose.override.yml"
+  ],
+  "service": "backend",
+  "workspaceFolder": "/workspace/backend",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.eol": "\n",
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4,
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "editor.formatOnSave": true,
+
+        "java.configuration.updateBuildConfiguration": "interactive",
+        "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
+        "java.format.settings.profile": "GoogleStyle",
+        "java.codeGeneration.hashCodeEquals.useInstanceof": true,
+        "java.codeGeneration.useBlocks": true,
+        "[java]": {
+          "editor.defaultFormatter": "redhat.java"
+        },
+        "sonarlint.connectedMode.project": {
+          "projectKey": "springboot-backend"
+        },
+        "sonarlint.analyzerProperties": {
+          "sonar.java.source": "11"
+        },
+        "java.test.config": {
+          "name": "JUnit",
+          "workingDirectory": "${workspaceFolder}",
+          "args": []
+        },
+        "java.test.editor.enableShortcuts": true
+      },
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "redhat.java",
+        "pivotal.vscode-spring-boot",
+        "sonarsource.sonarlint-vscode",
+        "test-editor.test-editor",
+        "formulahendry.code-runner",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  "remoteUser": "devuser"
+}

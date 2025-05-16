@@ -1,0 +1,62 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - USERNAME=${DEV_USERNAME}
+        - USER_UID=${DEV_USER_UID}
+        - USER_GID=${DEV_USER_GID}
+    ports:
+      - "9000:8080"
+    networks:
+      - app-network
+    volumes:
+      - ./backend:/workspace/backend:cached
+    command: sleep infinity
+    depends_on:
+      - mysql
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/app_db
+      - SPRING_DATASOURCE_USERNAME=app_user
+      - SPRING_DATASOURCE_PASSWORD=app_pass
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - USERNAME=${DEV_USERNAME}
+        - USER_UID=${DEV_USER_UID}
+        - USER_GID=${DEV_USER_GID}
+    ports:
+      - "4000:3000"
+    networks:
+      - app-network
+    working_dir: /workspace/frontend
+    volumes:
+      - ./frontend:/workspace/frontend:cached
+    command: sleep infinity
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_pass
+    ports:
+      - "3406:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+
+volumes:
+  mysql-data:
+
+networks:
+  app-network:
+    driver: bridge

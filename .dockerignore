@@ -1,0 +1,42 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Node.js / Frontend
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/dist/
+frontend/npm-debug.log
+frontend/yarn.lock
+
+# Java / Backend
+target/
+*.class
+*.log
+*.iml
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Git
+.git/
+.gitignore
+
+# Docker / DevContainer
+docker-compose.override.yml
+.dockerignore
+.devcontainer/docker-compose.override.yml
+.devcontainer/devcontainer.json
+
+# Env
+.env
+.env.*

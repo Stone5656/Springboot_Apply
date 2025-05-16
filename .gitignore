@@ -1,38 +1,39 @@
-# Java
-*.class
-*.jar
-*.war
-*.ear
+# Node.js (frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Eclipse
-.project
-.classpath
-.settings
+# VS Code
+.vscode/
+*.code-workspace
 
-# Idea
-.idea
+# DevContainers
+.devcontainer/docker-compose.override.yml
+.devcontainer/devcontainer.json
+.vscode-remote.json
+
+# Docker
+**/.DS_Store
+docker-compose.override.yml
+.env
+*.pid
+
+# IntelliJ / JetBrains IDEs
+.idea/
 *.iml
-*.iws
-*.ipr
+out/
 
-# OS
-Thumbs.db
-.DS_Store
-
-# Gradle
-.gradle
-!gradle-wrapper.jar
-
-# Maven
-target
-
-# Build
-out
-build
-bin
-
-# Other
+# Logs
 *.log
-*.swp
-*.bak
+logs/
 
+# System
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# VS Code devcontainer cache folders (optional)
+.vscode-server/
+.vscode-remote/

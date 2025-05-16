@@ -1,0 +1,22 @@
+# Maven target build dir
+/target/
+
+# IDE / Editor
+*.iml
+.idea/
+*.class
+*.log
+
+# Maven Wrapper
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+mvnw
+mvnw.cmd
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Reports
+checkstyle-result.xml
+spotbugs.xml
