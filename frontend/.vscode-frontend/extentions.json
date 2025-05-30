@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "dsznajder.es7-react-js-snippets",
+    "orta.vscode-jest",
+    "formulahendry.code-runner",
+    "ms-azuretools.vscode-docker"
+  ]
+}

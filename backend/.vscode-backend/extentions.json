@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "vscjava.vscode-java-pack",
+    "redhat.java",
+    "pivotal.vscode-spring-boot",
+    "sonarsource.sonarlint-vscode",
+    "test-editor.test-editor",
+    "formulahendry.code-runner",
+    "ms-azuretools.vscode-docker"
+  ]
+}
