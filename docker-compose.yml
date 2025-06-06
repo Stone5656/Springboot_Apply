@@ -4,9 +4,9 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       args:
-        - USERNAME=${DEV_USERNAME}
-        - USER_UID=${DEV_USER_UID}
-        - USER_GID=${DEV_USER_GID}
+        - USERNAME=${BACK_USER_NAME}
+        - USER_UID=${BACK_USER_ID}
+        - USER_GID=${APP_GROUP_ID}
     ports:
       - "9000:8080"
     networks:
@@ -26,9 +26,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - USERNAME=${DEV_USERNAME}
-        - USER_UID=${DEV_USER_UID}
-        - USER_GID=${DEV_USER_GID}
+        - USERNAME=${FRONT_USER_NAME}
+        - USER_UID=${FRONT_USER_ID}
+        - USER_GID=${APP_GROUP_ID}
     ports:
       - "4000:3000"
     networks:
@@ -40,7 +40,6 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
