@@ -1,21 +1,12 @@
-FROM maven:3.9-eclipse-temurin-11
+FROM maven:3.9-eclipse-temurin-17
 
 ARG USERNAME
 ARG USER_UID
 ARG USER_GID
-ARG BACKEND_DOCKER_ADD_PACKS
-
-# 環境変数（追加パッケージなどの処理）
-ENV BACKEND_DOCKER_ADD_PACKS=${BACKEND_DOCKER_ADD_PACKS}
 
 # 基本ツールのインストール
 RUN apt-get update && apt-get install -y \
-    sudo \
-    curl \
-    unzip \
-    vim \
-    bash \
-    ${BACKEND_DOCKER_ADD_PACKS} \
+    sudo curl unzip vim bash \
     && rm -rf /var/lib/apt/lists/*
 
 # ユーザー作成とsudo権限付与（UID/GIDの存在チェック＆再利用対応）

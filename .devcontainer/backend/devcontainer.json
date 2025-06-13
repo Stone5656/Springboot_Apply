@@ -1,8 +1,7 @@
 {
   "name": "spring-backend-dev",
   "dockerComposeFile": [
-    "../../docker-compose.yml",
-    "../../docker-compose.override.yml"
+    "../../docker-compose.yml"
   ],
   "service": "backend",
   "workspaceFolder": "/workspace/backend",
@@ -48,5 +47,6 @@
       ]
     }
   },
-  "remoteUser": "back-dev"
+  "remoteUser": "back-dev",
+  "postCreateCommand": "sudo chown -R $(whoami) ${containerWorkspaceFolder}"
 }

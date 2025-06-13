@@ -1,8 +1,7 @@
 {
   "name": "next-forntend-dev",
   "dockerComposeFile": [
-    "../../docker-compose.yml",
-    "../../docker-compose.override.yml"
+    "../../docker-compose.yml"
   ],
   "service": "frontend",
   "workspaceFolder": "/workspace/frontend",

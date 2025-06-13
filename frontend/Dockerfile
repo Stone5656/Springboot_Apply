@@ -5,19 +5,10 @@ FROM node:18-bullseye
 ARG USERNAME
 ARG USER_UID
 ARG USER_GID
-ARG FRONTEND_DOCKER_ADD_PACKS
-
-# 環境変数を取り込む
-ENV FRONTEND_DOCKER_ADD_PACKS=${FRONTEND_DOCKER_ADD_PACKS}
 
 # 基本ツールのインストール + 任意パッケージ追加
 RUN apt-get update && apt-get install -y \
-    sudo \
-    curl \
-    unzip \
-    vim \
-    bash \
-    ${FRONTEND_DOCKER_ADD_PACKS} \
+    sudo curl unzip vim bash \
     && rm -rf /var/lib/apt/lists/*
 
 # ユーザー作成とsudo権限付与（UID/GIDの存在チェック＆再利用対応）
