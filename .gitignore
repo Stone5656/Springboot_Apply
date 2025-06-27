@@ -40,3 +40,6 @@ Thumbs.db
 
 # Personal documentation and notes (not tracked in version control)
 mynote/*
+
+# Enviroments
+backend/src/main/resources/*
