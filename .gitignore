@@ -37,3 +37,9 @@ Thumbs.db
 # VS Code devcontainer cache folders (optional)
 .vscode-server/
 .vscode-remote/
+
+# Personal documentation and notes (not tracked in version control)
+mynote/*
+
+# Enviroments
+backend/src/main/resources/*

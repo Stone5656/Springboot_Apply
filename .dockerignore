@@ -40,3 +40,4 @@ docker-compose.override.yml
 # Env
 .env
 .env.*
+!.env.example
