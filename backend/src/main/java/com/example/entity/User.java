@@ -15,6 +15,7 @@ import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.AbstractAggregateRoot;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -30,8 +31,9 @@ import java.util.UUID;
 public class User extends AbstractAggregateRoot<User> {
 
     @Id
-    @JdbcTypeCode(SqlTypes.BINARY)
-    @Column(name = "id", columnDefinition = "BINARY(16)") // UUIDを効率的に格納
+    @GeneratedValue
+    @JdbcTypeCode(SqlTypes.UUID)
+    @Column(name = "id", columnDefinition = "BINARY(16)", updatable = false, nullable = false)
     private UUID id;
 
     @Column(name = "name", nullable = false, length = 30)
@@ -43,16 +45,18 @@ public class User extends AbstractAggregateRoot<User> {
     @Column(name = "email", nullable = false, unique = true, length = 320)
     private String email;
 
-    @UpdateTimestamp
     @Column(name = "email_verified_at")
-    private LocalDateTime emailVerifiedAt;// emailが変更されたらアップデートする
+    private LocalDateTime emailVerifiedAt; // emailが変更されたらアップデートする
 
     // hashさせたい
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Column(name = "remember_token")
     private String rememberToken;
+
+    @Column(name = "remember_token_expires_at")
+    private LocalDateTime rememberTokenExpiresAt;
 
     @Column(name = "profile_image_path")
     @Size(max = 1024)
@@ -69,7 +73,7 @@ public class User extends AbstractAggregateRoot<User> {
     private String channelName;
 
     @Column(name = "is_streamer", nullable = false)
-    private Boolean isStreamer=false;
+    private Boolean isStreamer = false;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -79,9 +83,77 @@ public class User extends AbstractAggregateRoot<User> {
     @Column(name = "update_at")
     private LocalDateTime updateAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;
+
+    // === コンストラクタ ===
+    public User(String name, String email) {
+        Assert.hasText(name, "名前は必須です");
+        Assert.hasText(email, "メールアドレスは必須です");
+        this.name = name;
+        this.email = email;
+    }
+
+    // === メソッド ===
+
+    // パスワードを受け取り、ハッシュ化してpasswordフィールドに入れるメソッド
     public void hashAndSetPassword(String rawPassword, PasswordEncoder encoder) {
-        Assert.hasText(rawPassword, "Password must not be empty");
-        Assert.notNull(encoder, "PasswordEncoder must not be null");
+        Assert.hasText(rawPassword, "パスワード無いでっせ");
+        Assert.notNull(encoder, "パスワードエンコーダー忘れてまっせ");
         this.password = encoder.encode(rawPassword);
     }
+
+    public void userSetRole(
+        Role role
+    ) {
+        this.role = role;
+    }
+
+    // プロフィール更新用
+    public void updateProfile(
+        String name,
+        String profileImagePath,
+        String coverImagePath,
+        String bio
+    ) {
+        this.name = name;
+        this.profileImagePath = profileImagePath;
+        this.coverImagePath = coverImagePath;
+        this.bio = bio;
+    }
+
+    public void changePassword(String oldPassword, String newPassword, PasswordEncoder encoder) {
+        Assert.hasText(oldPassword, "古いパスワード無いでっせ");
+        Assert.hasText(newPassword, "新しいパスワード無いでっせ");
+        Assert.notNull(encoder, "パスワードエンコーダー忘れてまっせ");
+
+        if (!encoder.matches(oldPassword, this.password)) {
+            throw new IllegalArgumentException("パスワード間違ってて草");
+        }
+
+        this.password = encoder.encode(newPassword);
+    }
+
+    public void changeEmail(String newEmail) {
+        Assert.hasText(newEmail, "メアド無いでっせ");
+
+        if (!this.email.equals(newEmail)) {
+            this.email = newEmail;
+            this.emailVerifiedAt = null; // 再認証の必要あり
+        }
+    }
+
+    public void issueRememberToken(Duration validDuration) {
+        this.rememberToken = UUID.randomUUID().toString();
+        this.rememberTokenExpiresAt = LocalDateTime.now().plus(validDuration);
+    }
+
+    public boolean verifyRememberToken(String token) {
+        return this.rememberToken != null
+            && this.rememberToken.equals(token)
+            && this.rememberTokenExpiresAt != null
+            && this.rememberTokenExpiresAt.isAfter(LocalDateTime.now());
+    }
+
 }
