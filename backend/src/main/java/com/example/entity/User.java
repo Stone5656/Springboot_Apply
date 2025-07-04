@@ -15,6 +15,7 @@ import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.AbstractAggregateRoot;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
+import com.example.enums.Role;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -25,7 +26,8 @@ import java.util.UUID;
 @ToString(exclude = {"password"}) // パスワードはログに出力しない
 @Entity
 @Table(name = "users", indexes = {
-    @Index(name = "idx_user_email", columnList = "email", unique = true)
+    @Index(name = "idx_user_email", columnList = "email", unique = true),
+    @Index(name = "idx_user_name", columnList = "name", unique = true)
 })
 // ドメインイベントを発行するために AbstractAggregateRoot を継承
 public class User extends AbstractAggregateRoot<User> {
@@ -42,7 +44,7 @@ public class User extends AbstractAggregateRoot<User> {
     @Email // 形式チェック
     @NotBlank // 空文字やnull禁止
     @Size(max = 320)
-    @Column(name = "email", nullable = false, unique = true, length = 320)
+    @Column(name = "email", nullable = false, length = 320)
     private String email;
 
     @Column(name = "email_verified_at")
@@ -58,18 +60,18 @@ public class User extends AbstractAggregateRoot<User> {
     @Column(name = "remember_token_expires_at")
     private LocalDateTime rememberTokenExpiresAt;
 
-    @Column(name = "profile_image_path")
     @Size(max = 1024)
+    @Column(name = "profile_image_path")
     private String profileImagePath;
 
-    @Column(name = "cover_image_path")
     @Size(max = 1024)
+    @Column(name = "cover_image_path")
     private String coverImagePath;
 
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
-    @Column(name = "channel_name", unique = true, length = 30)
+    @Column(name = "channel_name", length = 30)
     private String channelName;
 
     @Column(name = "is_streamer", nullable = false)
@@ -98,7 +100,10 @@ public class User extends AbstractAggregateRoot<User> {
     // === メソッド ===
 
     // パスワードを受け取り、ハッシュ化してpasswordフィールドに入れるメソッド
-    public void hashAndSetPassword(String rawPassword, PasswordEncoder encoder) {
+    public void hashAndSetPassword(
+        String rawPassword,
+        PasswordEncoder encoder
+    ) {
         Assert.hasText(rawPassword, "パスワード無いでっせ");
         Assert.notNull(encoder, "パスワードエンコーダー忘れてまっせ");
         this.password = encoder.encode(rawPassword);
@@ -123,7 +128,11 @@ public class User extends AbstractAggregateRoot<User> {
         this.bio = bio;
     }
 
-    public void changePassword(String oldPassword, String newPassword, PasswordEncoder encoder) {
+    public void changePassword(
+        String oldPassword,
+        String newPassword,
+        PasswordEncoder encoder
+    ) {
         Assert.hasText(oldPassword, "古いパスワード無いでっせ");
         Assert.hasText(newPassword, "新しいパスワード無いでっせ");
         Assert.notNull(encoder, "パスワードエンコーダー忘れてまっせ");
@@ -135,7 +144,9 @@ public class User extends AbstractAggregateRoot<User> {
         this.password = encoder.encode(newPassword);
     }
 
-    public void changeEmail(String newEmail) {
+    public void changeEmail(
+        String newEmail
+    ) {
         Assert.hasText(newEmail, "メアド無いでっせ");
 
         if (!this.email.equals(newEmail)) {
@@ -144,12 +155,16 @@ public class User extends AbstractAggregateRoot<User> {
         }
     }
 
-    public void issueRememberToken(Duration validDuration) {
+    public void issueRememberToken(
+        Duration validDuration
+    ) {
         this.rememberToken = UUID.randomUUID().toString();
         this.rememberTokenExpiresAt = LocalDateTime.now().plus(validDuration);
     }
 
-    public boolean verifyRememberToken(String token) {
+    public boolean verifyRememberToken(
+        String token
+    ) {
         return this.rememberToken != null
             && this.rememberToken.equals(token)
             && this.rememberTokenExpiresAt != null

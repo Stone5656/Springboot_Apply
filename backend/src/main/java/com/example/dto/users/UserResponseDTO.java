@@ -1,4 +1,4 @@
-package com.example.dto;
+package com.example.dto.users;
 
 import java.util.UUID;
 import com.example.entity.User;

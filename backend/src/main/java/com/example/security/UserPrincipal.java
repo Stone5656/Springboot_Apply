@@ -1,7 +1,7 @@
 package com.example.security;
 
-import com.example.entity.Role;
 import com.example.entity.User;
+import com.example.enums.Role;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

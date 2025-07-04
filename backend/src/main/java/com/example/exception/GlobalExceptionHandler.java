@@ -4,6 +4,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -14,6 +15,17 @@ public class GlobalExceptionHandler {
             LocalDateTime.now(),
             HttpStatus.BAD_REQUEST.value(),
             "Bad Request",
+            ex.getMessage()
+        );
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<Object> handleBadRequest(NoSuchElementException ex, WebRequest request) {
+        ErrorResponse response = new ErrorResponse(
+            LocalDateTime.now(),
+            HttpStatus.NOT_FOUND.value(),
+            "Not Found",
             ex.getMessage()
         );
         return ResponseEntity.badRequest().body(response);
