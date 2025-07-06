@@ -1,11 +1,11 @@
 package com.example.service;
 
-import com.example.dto.LoginRequest;
-import com.example.dto.LoginResponse;
-import com.example.dto.UserRegisterRequest;
-import com.example.dto.UserResponseDTO;
-import com.example.dto.UserUpdateRequestDTO;
-import com.example.entity.Role;
+import com.example.dto.users.LoginRequest;
+import com.example.dto.users.LoginResponse;
+import com.example.dto.users.UserRegisterRequest;
+import com.example.dto.users.UserResponseDTO;
+import com.example.dto.users.UserUpdateRequestDTO;
+import com.example.enums.Role;
 import com.example.entity.User;
 import com.example.repository.UserRepository;
 import com.example.security.JwtUtils;
@@ -13,16 +13,19 @@ import lombok.RequiredArgsConstructor;
 import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
+    @Transactional
     public User registerUser(UserRegisterRequest request) {
         if (!StringUtils.hasText(request.getName())) {
         throw new IllegalArgumentException("名前は必須です");
@@ -65,6 +68,7 @@ public class UserService {
             .build();
     }
 
+    @Transactional
     public User changeProfileUser(UUID id, UserUpdateRequestDTO request) {
         return userRepository.findById(id)
             .map(user -> {

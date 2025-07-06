@@ -1,10 +1,10 @@
 package com.example.controller;
 
-import com.example.dto.LoginRequest;
-import com.example.dto.LoginResponse;
-import com.example.dto.UserRegisterRequest;
-import com.example.dto.UserResponseDTO;
-import com.example.dto.UserUpdateRequestDTO;
+import com.example.dto.users.LoginRequest;
+import com.example.dto.users.LoginResponse;
+import com.example.dto.users.UserRegisterRequest;
+import com.example.dto.users.UserResponseDTO;
+import com.example.dto.users.UserUpdateRequestDTO;
 import com.example.entity.User;
 import com.example.repository.UserRepository;
 import com.example.service.UserService;

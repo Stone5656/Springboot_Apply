@@ -68,6 +68,12 @@
             <version>2.5.0</version>
         </dependency>
 
+        <!-- Actuator(ヘルスチェック系ライブラリ) -->
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- JSPエンジン -->
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
