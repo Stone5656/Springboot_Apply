@@ -8,7 +8,6 @@ import lombok.Setter;
 @Setter
 public class SearchRequestDTO {
 
-    private String query;          // タイトルの部分一致（任意）
-    private VideoSort sortBy = VideoSort.PUBLISHED_AT;  // VIEWS_COUNT または PUBLISHED_AT（デフォルト：新着順）
-
+    private String query; // タイトルの部分一致（任意）
+    private VideoSort sortBy = VideoSort.PUBLISHED_AT; // VIEWS_COUNT または PUBLISHED_AT（デフォルト：新着順）
 }

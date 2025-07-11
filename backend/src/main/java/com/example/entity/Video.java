@@ -1,24 +1,21 @@
 package com.example.entity;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AccessLevel;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import com.example.enums.VideoStatus;
 import com.example.enums.VideoVisibility;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "videos", indexes = {
-    @Index(name = "idx_video_user_id", columnList = "user_id"),
-    @Index(name = "idx_video_published_at", columnList = "published_at")
-})
+@Table(name = "videos", indexes = {@Index(name = "idx_video_user_id", columnList = "user_id"),
+        @Index(name = "idx_video_published_at", columnList = "published_at")})
 public class Video {
 
     @Id
@@ -28,7 +25,7 @@ public class Video {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User userId;
 
     @Column(name = "title", nullable = false, length = 50)
     private String title;
@@ -70,24 +67,30 @@ public class Video {
     private LocalDateTime updatedAt;
 
     // ✅ 新規作成用コンストラクタ
-    public Video(String title, String description, String videoPath, String thumbnailPath, User user) {
+    public Video(String title, String description, String videoPath, String thumbnailPath, User userId) {
         this.title = title;
         this.description = description;
         this.videoPath = videoPath;
         this.thumbnailPath = thumbnailPath;
-        this.user = user;
+        this.userId = userId;
         this.status = VideoStatus.UPLOADED;
         this.visibility = VideoVisibility.PRIVATE;
         this.viewsCount = 0L;
     }
 
     // ✅ 動画情報の更新（部分更新OK）
-    public void updateVideoInfo(String title, String description, String thumbnailPath, VideoVisibility visibility, VideoStatus status) {
-        if (title != null) this.title = title;
-        if (description != null) this.description = description;
-        if (thumbnailPath != null) this.thumbnailPath = thumbnailPath;
-        if (visibility != null) this.visibility = visibility;
-        if (status != null) this.status = status;
+    public void updateVideoInfo(String title, String description, String thumbnailPath, VideoVisibility visibility,
+            VideoStatus status) {
+        if (title != null)
+            this.title = title;
+        if (description != null)
+            this.description = description;
+        if (thumbnailPath != null)
+            this.thumbnailPath = thumbnailPath;
+        if (visibility != null)
+            this.visibility = visibility;
+        if (status != null)
+            this.status = status;
     }
 
     // ✅ 再生数を1増やす
@@ -106,5 +109,4 @@ public class Video {
         this.visibility = VideoVisibility.PRIVATE;
         this.publishedAt = null;
     }
-
 }

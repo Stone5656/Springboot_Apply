@@ -1,44 +1,32 @@
 package com.example.exception;
 
+import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
-import java.time.LocalDateTime;
-import java.util.NoSuchElementException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleBadRequest(IllegalArgumentException ex, WebRequest request) {
-        ErrorResponse response = new ErrorResponse(
-            LocalDateTime.now(),
-            HttpStatus.BAD_REQUEST.value(),
-            "Bad Request",
-            ex.getMessage()
-        );
+        ErrorResponse response = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), "Bad Request",
+                ex.getMessage());
         return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<Object> handleBadRequest(NoSuchElementException ex, WebRequest request) {
-        ErrorResponse response = new ErrorResponse(
-            LocalDateTime.now(),
-            HttpStatus.NOT_FOUND.value(),
-            "Not Found",
-            ex.getMessage()
-        );
+        ErrorResponse response = new ErrorResponse(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), "Not Found",
+                ex.getMessage());
         return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGeneric(Exception ex, WebRequest request) {
-        ErrorResponse response = new ErrorResponse(
-            LocalDateTime.now(),
-            HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "Internal Server Error",
-            ex.getMessage()
-        );
+        ErrorResponse response = new ErrorResponse(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Internal Server Error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
@@ -55,9 +43,20 @@ public class GlobalExceptionHandler {
             this.message = message;
         }
 
-        public LocalDateTime getTimestamp() { return timestamp; }
-        public int getStatus() { return status; }
-        public String getError() { return error; }
-        public String getMessage() { return message; }
+        public LocalDateTime getTimestamp() {
+            return timestamp;
+        }
+
+        public int getStatus() {
+            return status;
+        }
+
+        public String getError() {
+            return error;
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
 }

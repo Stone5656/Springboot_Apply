@@ -14,6 +14,4 @@ public class VideoCreateRequestDTO {
     private String videoPath;
 
     private String thumbnailPath;
-
 }
-

@@ -5,9 +5,7 @@ ARG USER_UID
 ARG USER_GID
 
 # 基本ツールのインストール
-RUN apt-get update && apt-get install -y \
-    sudo curl unzip vim bash \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y sudo curl unzip vim bash && rm -rf /var/lib/apt/lists/*
 
 # ユーザー作成とsudo権限付与（UID/GIDの存在チェック＆再利用対応）
 RUN mkdir -p /etc/sudoers.d && \

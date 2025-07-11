@@ -14,12 +14,8 @@ public class PublicVideoResponseDTO {
     private UploaderDTO uploader;
 
     public static PublicVideoResponseDTO fromEntity(Video video) {
-        return PublicVideoResponseDTO.builder()
-                .id(video.getId())
-                .title(video.getTitle())
-                .thumbnailPath(video.getThumbnailPath())
-                .viewsCount(video.getViewsCount())
-                .uploader(UploaderDTO.fromUser(video.getUser()))
-                .build();
+        return PublicVideoResponseDTO.builder().id(video.getId()).title(video.getTitle())
+                .thumbnailPath(video.getThumbnailPath()).viewsCount(video.getViewsCount())
+                .uploader(UploaderDTO.fromUser(video.getUserId())).build();
     }
 }

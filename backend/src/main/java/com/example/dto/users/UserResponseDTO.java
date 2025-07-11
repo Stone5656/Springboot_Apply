@@ -1,9 +1,9 @@
 package com.example.dto.users;
 
-import java.util.UUID;
 import com.example.entity.User;
-import lombok.Getter;
 import java.time.LocalDateTime;
+import java.util.UUID;
+import lombok.Getter;
 
 @Getter
 public class UserResponseDTO {
@@ -20,10 +20,8 @@ public class UserResponseDTO {
     private LocalDateTime updateAt;
 
     // --- コンストラクタ ---
-    public UserResponseDTO(UUID id, String name, String email,
-                           String profileImagePath, String coverImagePath,
-                           String bio, String channelName, Boolean isStreamer,
-                           LocalDateTime createdAt, LocalDateTime updateAt) {
+    public UserResponseDTO(UUID id, String name, String email, String profileImagePath, String coverImagePath,
+            String bio, String channelName, Boolean isStreamer, LocalDateTime createdAt, LocalDateTime updateAt) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -50,17 +48,8 @@ public class UserResponseDTO {
 
     // --- Entityから変換する static factory ---
     public static UserResponseDTO fromEntity(User user) {
-        return new UserResponseDTO(
-            user.getId(),
-            user.getName(),
-            user.getEmail(),
-            user.getProfileImagePath(),
-            user.getCoverImagePath(),
-            user.getBio(),
-            user.getChannelName(),
-            user.getIsStreamer(),
-            user.getCreatedAt(),
-            user.getUpdateAt()
-        );
+        return new UserResponseDTO(user.getId(), user.getName(), user.getEmail(), user.getProfileImagePath(),
+                user.getCoverImagePath(), user.getBio(), user.getChannelName(), user.getIsStreamer(),
+                user.getCreatedAt(), user.getUpdateAt());
     }
 }
