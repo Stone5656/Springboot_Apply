@@ -1,55 +1,27 @@
+/**
+ * 自動生成された User のレスポンスDTO
+ */
 package com.example.dto.users;
 
 import com.example.entity.User;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import java.time.LocalDateTime;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class UserResponseDTO {
 
     private UUID id;
-    private String name;
-    private String email;
-    private String profileImagePath;
-    private String coverImagePath;
-    private String bio;
-    private String channelName;
-    private Boolean isStreamer;
     private LocalDateTime createdAt;
-    private LocalDateTime updateAt;
+    private LocalDateTime updatedAt;
 
-    // --- コンストラクタ ---
-    public UserResponseDTO(UUID id, String name, String email, String profileImagePath, String coverImagePath,
-            String bio, String channelName, Boolean isStreamer, LocalDateTime createdAt, LocalDateTime updateAt) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.profileImagePath = profileImagePath;
-        this.coverImagePath = coverImagePath;
-        this.bio = bio;
-        this.channelName = channelName;
-        this.isStreamer = isStreamer;
-        this.createdAt = createdAt;
-        this.updateAt = updateAt;
-    }
-
-    // --- ゲッター ---
-    // public UUID getId() { return id; }
-    // public String getName() { return name; }
-    // public String getEmail() { return email; }
-    // public String getProfileImagePath() { return profileImagePath; }
-    // public String getCoverImagePath() { return coverImagePath; }
-    // public String getBio() { return bio; }
-    // public String getChannelName() { return channelName; }
-    // public Boolean getIsStreamer() { return isStreamer; }
-    // public LocalDateTime getCreatedAt() { return createdAt; }
-    // public LocalDateTime getUpdateAt() { return updateAt; }
-
-    // --- Entityから変換する static factory ---
-    public static UserResponseDTO fromEntity(User user) {
-        return new UserResponseDTO(user.getId(), user.getName(), user.getEmail(), user.getProfileImagePath(),
-                user.getCoverImagePath(), user.getBio(), user.getChannelName(), user.getIsStreamer(),
-                user.getCreatedAt(), user.getUpdateAt());
+    public static UserResponseDTO fromEntity(User entity) {
+        return UserResponseDTO.builder()
+                .id(entity.getId())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .build();
     }
 }

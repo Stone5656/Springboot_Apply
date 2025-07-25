@@ -2,24 +2,31 @@ package com.example.repository;
 
 import com.example.entity.Video;
 import com.example.enums.VideoVisibility;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 
-@Repository
-public interface VideoRepository extends JpaRepository<Video, Long> {
+public interface VideoRepository extends JpaRepository<Video, UUID> {
 
-    // ✅ 特定のユーザーの公開動画一覧（ページング）
     Page<Video> findByUserIdAndVisibility(UUID userId, VideoVisibility visibility, Pageable pageable);
 
-    // ✅ タイトル部分一致 + 公開動画（ページング・ソート対応）
     Page<Video> findByTitleContainingIgnoreCaseAndVisibility(String title, VideoVisibility visibility,
             Pageable pageable);
 
     Page<Video> findByUserId(UUID userId, Pageable pageable);
 
-    // ✅ 全公開動画一覧（ページング・ソート）
     Page<Video> findByVisibility(VideoVisibility visibility, Pageable pageable);
+
+    // --- 削除済み含めて取得 ---
+    @Query("SELECT v FROM Video v WHERE v.id = :id")
+    Optional<Video> findByIdIncludingDeleted(@Param("id")
+    UUID id);
+
+    // --- 論理削除の復元 ---
+    @Modifying @Query("UPDATE Video v SET v.deletedAt = NULL, v.status = 'READY' WHERE v.id = :id")
+    void restoreById(@Param("id")
+    UUID id);
 }

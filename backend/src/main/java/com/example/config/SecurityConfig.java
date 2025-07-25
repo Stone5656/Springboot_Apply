@@ -25,13 +25,15 @@ public class SecurityConfig {
 
     // パスワードエンコーダー定義
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder()
+    {
         return new BCryptPasswordEncoder();
     }
 
     // セキュリティの全体設定
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception
+    {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/users/register", "/api/users/login", "/swagger-ui/**", "/v3/api-docs/**",
                         "/actuator/**")
@@ -39,14 +41,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()).formLogin(login -> login.disable())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // JWT前提
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);; // ここでチェーン終わり
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // ここでチェーン終わり
 
         return http.build();
     }
 
     // === CORS設定！！！ ===
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource()
+    {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:4000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
@@ -59,7 +62,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception
+    {
         return config.getAuthenticationManager();
     }
 }

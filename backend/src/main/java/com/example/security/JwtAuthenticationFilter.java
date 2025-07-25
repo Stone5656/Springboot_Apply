@@ -13,8 +13,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component
-@RequiredArgsConstructor
+@Component @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
@@ -22,26 +21,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+            throws ServletException, IOException
+    {
 
         String authHeader = request.getHeader("Authorization");
         String jwt = null;
         String userEmail = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            try {
+        if (authHeader != null && authHeader.startsWith("Bearer "))
+        {
+            try
+            {
                 jwt = authHeader.substring(7);
                 userEmail = jwtUtils.getEmailFromToken(jwt);
-            } catch (Exception e) {
+            } catch (Exception e)
+            {
                 System.err.printf("JWTの解析に失敗しました: {}", e.getMessage());
             }
         }
 
         // SecurityContext にまだ認証情報がセットされていない場合のみ処理
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null)
+        {
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
-            if (jwtUtils.validateJwtToken(jwt)) {
+            if (jwtUtils.validateJwtToken(jwt))
+            {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
                         null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

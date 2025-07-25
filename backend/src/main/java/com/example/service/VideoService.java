@@ -5,69 +5,113 @@ import com.example.entity.User;
 import com.example.entity.Video;
 import com.example.enums.VideoSort;
 import com.example.enums.VideoVisibility;
-import com.example.repository.UserRepository;
 import com.example.repository.VideoRepository;
-import com.example.security.UserPrincipal;
-import lombok.RequiredArgsConstructor;
+import com.example.util.CurrentUserUtil;
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
-@Transactional(readOnly = true)
-@RequiredArgsConstructor
+@Service @Transactional(readOnly = true) @RequiredArgsConstructor
 public class VideoService {
 
-    private final UserRepository userRepository;
+    private static final String VIDEO_NOT_FOUND = "動画が見つかりません (ID: %s)";
+    private static final String VIDEO_IS_DELETED = "動画は削除されています (ID: %s)";
+
+    private final CurrentUserUtil currentUserUtil;
     private final VideoRepository videoRepository;
 
-    /** 🔑 現在のユーザーを取得 */
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof UserPrincipal)) {
-            throw new IllegalStateException("認証ユーザーが取得できません");
+    // ========================================================
+    // ========== 内部ユーティリティメソッド ==================
+    // ========================================================
+
+    /**
+     * 削除されていない動画をIDから取得。
+     *
+     * @param id
+     *            動画ID
+     * @return Videoエンティティ
+     * @throws NoSuchElementException
+     *             動画が存在しない場合
+     * @throws IllegalStateException
+     *             動画が削除状態の場合
+     */
+    private Video getActiveVideoOrThrow(UUID id) {
+        Video video = videoRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException(String.format(VIDEO_NOT_FOUND, id)));
+        if (video.isDeleted()) {
+            throw new IllegalStateException(String.format(VIDEO_IS_DELETED, id));
         }
-        UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
-        return userRepository.findById(principal.getId())
-                .orElseThrow(() -> new IllegalStateException("ユーザー情報が存在しません"));
+        return video;
     }
 
-    /** 動画新規作成 */
+    // ========================================================
+    // ========== 動画の作成・取得 ============================
+    // ========================================================
+
+    /**
+     * 動画を新規作成します。
+     *
+     * @param request
+     *            動画作成リクエストDTO
+     * @return 作成された動画のレスポンスDTO
+     * @throws IllegalArgumentException
+     *             タイトルまたは動画パスがnullの場合
+     */
     @Transactional
     public VideoResponseDTO createVideo(VideoCreateRequestDTO request) {
         if (request.getTitle() == null || request.getVideoPath() == null) {
             throw new IllegalArgumentException("タイトルと動画パスは必須です");
         }
-
-        User user = getCurrentUser();
+        User user = currentUserUtil.getCurrentUser();
         Video video = new Video(request.getTitle(), request.getDescription(), request.getVideoPath(),
                 request.getThumbnailPath(), user);
-
         return VideoResponseDTO.fromEntity(videoRepository.save(video));
     }
 
-    /** 動画取得 */
-    public VideoResponseDTO getVideo(Long id) {
-        Video video = videoRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("動画が見つかりません (ID: " + id + ")"));
-        return VideoResponseDTO.fromEntity(video);
+    /**
+     * 指定IDの動画を取得します。
+     *
+     * @param id
+     *            動画ID
+     * @return 該当動画のレスポンスDTO
+     * @throws NoSuchElementException
+     *             動画が存在しない場合
+     */
+    public VideoResponseDTO getVideo(UUID id) {
+        return VideoResponseDTO.fromEntity(getActiveVideoOrThrow(id));
     }
 
-    /** 自分の動画一覧 */
+    /**
+     * 現在のユーザーが所有する動画の一覧を取得します。
+     *
+     * @param pageable
+     *            ページ情報
+     * @return 動画レスポンスDTOのページ
+     */
     public Page<VideoResponseDTO> getMyVideos(Pageable pageable) {
-        User user = getCurrentUser();
-        Page<Video> videos = videoRepository.findByUserId(user.getId(), pageable);
-        return videos.map(VideoResponseDTO::fromEntity);
+        User user = currentUserUtil.getCurrentUser();
+        return videoRepository.findByUserId(user.getId(), pageable).map(VideoResponseDTO::fromEntity);
     }
 
-    /** 公開動画 検索 */
+    // ========================================================
+    // ========== 公開動画の検索・取得 =========================
+    // ========================================================
+
+    /**
+     * 公開動画を検索クエリ付きで取得します。
+     *
+     * @param request
+     *            検索条件
+     * @param pageable
+     *            ページ情報
+     * @return 公開動画レスポンスDTOのページ
+     */
     public Page<PublicVideoResponseDTO> searchPublicVideos(SearchRequestDTO request, Pageable pageable) {
         String query = request.getQuery() != null ? request.getQuery() : "";
-
         Pageable effectivePageable = pageable;
         if (pageable.getSort().isUnsorted()) {
             Sort sort = request.getSortBy() == VideoSort.VIEWS_COUNT
@@ -75,53 +119,151 @@ public class VideoService {
                     : Sort.by(Sort.Direction.DESC, "publishedAt");
             effectivePageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
         }
-
-        Page<Video> result = videoRepository.findByTitleContainingIgnoreCaseAndVisibility(query, VideoVisibility.PUBLIC, effectivePageable);
-        return result.map(PublicVideoResponseDTO::fromEntity);
+        return videoRepository
+                .findByTitleContainingIgnoreCaseAndVisibility(query, VideoVisibility.PUBLIC, effectivePageable)
+                .map(PublicVideoResponseDTO::fromEntity);
     }
 
-    /** 特定ユーザーの公開動画 */
+    /**
+     * 指定ユーザーの公開動画を取得します。
+     *
+     * @param userId
+     *            ユーザーID
+     * @param pageable
+     *            ページ情報
+     * @return 公開動画レスポンスDTOのページ
+     */
     public Page<PublicVideoResponseDTO> getPublicVideosByUser(UUID userId, Pageable pageable) {
-        Page<Video> videos = videoRepository.findByUserIdAndVisibility(userId, VideoVisibility.PUBLIC, pageable);
-        return videos.map(PublicVideoResponseDTO::fromEntity);
+        return videoRepository.findByUserIdAndVisibility(userId, VideoVisibility.PUBLIC, pageable)
+                .map(PublicVideoResponseDTO::fromEntity);
     }
 
-    /** 人気順 */
+    /**
+     * 人気順に公開動画を取得します。
+     *
+     * @param pageable
+     *            ページ情報
+     * @return 公開動画レスポンスDTOのページ
+     */
     public Page<PublicVideoResponseDTO> getPopularVideos(Pageable pageable) {
-        Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "viewsCount"));
-        Page<Video> videos = videoRepository.findByVisibility(VideoVisibility.PUBLIC, sorted);
-        return videos.map(PublicVideoResponseDTO::fromEntity);
+        Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "viewsCount"));
+        return videoRepository.findByVisibility(VideoVisibility.PUBLIC, sorted).map(PublicVideoResponseDTO::fromEntity);
     }
 
-    /** 新着順 */
+    /**
+     * 新着順に公開動画を取得します。
+     *
+     * @param pageable
+     *            ページ情報
+     * @return 公開動画レスポンスDTOのページ
+     */
     public Page<PublicVideoResponseDTO> getRecentVideos(Pageable pageable) {
-        Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "publishedAt"));
-        Page<Video> videos = videoRepository.findByVisibility(VideoVisibility.PUBLIC, sorted);
-        return videos.map(PublicVideoResponseDTO::fromEntity);
+        Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "publishedAt"));
+        return videoRepository.findByVisibility(VideoVisibility.PUBLIC, sorted).map(PublicVideoResponseDTO::fromEntity);
     }
 
-    /** 動画更新 */
-    @Transactional
-    public VideoResponseDTO updateVideo(Long id, VideoUpdateRequestDTO request) {
-        Video video = videoRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("動画が見つかりません (ID: " + id + ")"));
+    // ========================================================
+    // ========== 動画の更新・削除・復元 ========================
+    // ========================================================
 
+    /**
+     * 動画情報を更新します。
+     *
+     * @param id
+     *            動画ID
+     * @param request
+     *            更新内容
+     * @return 更新後のレスポンスDTO
+     * @throws IllegalArgumentException
+     *             リクエストがnullの場合
+     */
+    @Transactional
+    public VideoResponseDTO updateVideo(UUID id, VideoUpdateRequestDTO request) {
+        Video video = getActiveVideoOrThrow(id);
         if (request == null) {
             throw new IllegalArgumentException("更新内容が指定されていません");
         }
-
         video.updateVideoInfo(request.getTitle(), request.getDescription(), request.getThumbnailPath(),
                 request.getVisibility(), request.getStatus());
-
         return VideoResponseDTO.fromEntity(video);
     }
 
-    /** 動画削除 */
+    /**
+     * 動画を論理削除します。
+     *
+     * @param id
+     *            動画ID
+     */
     @Transactional
-    public void deleteVideo(Long id) {
-        if (!videoRepository.existsById(id)) {
-            throw new NoSuchElementException("動画が見つかりません (ID: " + id + ")");
+    public void deleteVideo(UUID id) {
+        Video video = getActiveVideoOrThrow(id);
+        video.softDelete();
+        videoRepository.save(video);
+    }
+
+    /**
+     * 論理削除された動画を復元します。
+     *
+     * @param id
+     *            動画ID
+     * @return 復元された動画のレスポンスDTO
+     * @throws NoSuchElementException
+     *             動画が存在しない場合
+     * @throws IllegalStateException
+     *             動画が削除状態でない場合
+     */
+    @Transactional
+    public VideoResponseDTO restoreVideo(UUID id) {
+        Video video = videoRepository.findByIdIncludingDeleted(id)
+                .orElseThrow(() -> new NoSuchElementException(String.format(VIDEO_NOT_FOUND, id)));
+        if (!video.isDeleted()) {
+            throw new IllegalStateException("この動画は削除されていません");
         }
-        videoRepository.deleteById(id);
+        video.restore();
+        return VideoResponseDTO.fromEntity(videoRepository.save(video));
+    }
+
+    // ========================================================
+    // ========== 動画ステータス操作 ===========================
+    // ========================================================
+
+    /**
+     * 動画の再生数を1増加させます。
+     *
+     * @param id
+     *            動画ID
+     */
+    @Transactional
+    public void incrementViews(UUID id) {
+        Video video = getActiveVideoOrThrow(id);
+        video.incrementViews();
+    }
+
+    /**
+     * 動画を公開状態に設定します。
+     *
+     * @param id
+     *            動画ID
+     * @param publishedAt
+     *            公開日時（null可）
+     */
+    @Transactional
+    public void publishVideo(UUID id, LocalDateTime publishedAt) {
+        Video video = getActiveVideoOrThrow(id);
+        video.publish(publishedAt);
+    }
+
+    /**
+     * 動画を非公開状態に戻します。
+     *
+     * @param id
+     *            動画ID
+     */
+    @Transactional
+    public void unpublishVideo(UUID id) {
+        Video video = getActiveVideoOrThrow(id);
+        video.unpublish();
     }
 }

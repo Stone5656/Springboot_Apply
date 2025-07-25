@@ -1,10 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <profiles version="12">
     <profile kind="CodeFormatterProfile" name="Custom Java Format" version="12">
+        <!-- インデントと行長 -->
         <setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space"/>
         <setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="4"/>
         <setting id="org.eclipse.jdt.core.formatter.indentation.size" value="4"/>
         <setting id="org.eclipse.jdt.core.formatter.lineSplit" value="120"/>
         <setting id="org.eclipse.jdt.core.formatter.comment.line_length" value="120"/>
+
+        <!-- メソッドの波括弧位置 -->
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_method_declaration" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_if_else" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_for" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_while" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_switch" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_block" value="end_of_line"/>
+
+        <!-- 引数・パラメータの折り返し -->
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_parameters_in_method_declaration" value="16"/>
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_method_invocation" value="16"/>
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_expressions_in_if_condition" value="16"/>
+
+        <!-- アノテーションの位置 -->
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_method" value="16"/>
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_parameter" value="16"/>
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_type" value="16"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_each_annotation" value="true"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_type" value="insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_method" value="insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_field" value="insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_parameter" value="insert"/>
     </profile>
 </profiles>

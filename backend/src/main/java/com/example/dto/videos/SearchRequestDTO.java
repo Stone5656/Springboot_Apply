@@ -4,8 +4,7 @@ import com.example.enums.VideoSort;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+@Getter @Setter
 public class SearchRequestDTO {
 
     private String query; // タイトルの部分一致（任意）

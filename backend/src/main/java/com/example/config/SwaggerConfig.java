@@ -11,7 +11,8 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
 
     @Bean
-    public OpenAPI customOpenAPI() {
+    public OpenAPI customOpenAPI()
+    {
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI().info(new Info().title("My API").version("v1").description("JWT 認証付き API ドキュメント"))
