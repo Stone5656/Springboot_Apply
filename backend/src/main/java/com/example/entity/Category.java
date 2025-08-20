@@ -6,15 +6,11 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.UpdateTimestamp;
 import com.example.util.entity.AbstractSoftDeletableEntity;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * 動画や配信のカテゴリを表すエンティティ。
@@ -43,12 +39,6 @@ public class Category extends AbstractSoftDeletableEntity {
     // ======== カラム定義 ========
     // ==========================
 
-    /** 主キーUUID（BINARY(16)） */
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, updatable = false)
-    private UUID id;
-
     /** カテゴリ名 */
     @NotBlank
     @Size(max = 255)
@@ -65,16 +55,6 @@ public class Category extends AbstractSoftDeletableEntity {
     @Size(max = 2000)
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
-
-    /** 作成日時 */
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    /** 更新日時 */
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     // ============================
     // ======== リレーション ========

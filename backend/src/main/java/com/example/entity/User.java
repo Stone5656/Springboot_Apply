@@ -22,13 +22,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.type.SqlTypes;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
 
@@ -50,13 +46,6 @@ import org.springframework.util.Assert;
         @Index(name = "idx_user_last_login", columnList = "last_login_at"),
         @Index(name = "idx_user_status", columnList = "status")})
 public class User extends AbstractSoftDeletableEntity {
-
-    /** ユーザーID（UUID形式） */
-    @Id
-    @GeneratedValue
-    @JdbcTypeCode(SqlTypes.UUID)
-    @Column(name = "id", columnDefinition = "BINARY(16)", updatable = false, nullable = false)
-    private UUID id;
 
     /** ユーザー名（30文字以内） */
     @NotBlank
@@ -152,16 +141,6 @@ public class User extends AbstractSoftDeletableEntity {
     @Size(max = 30)
     @Column(name = "phone_number")
     private String phoneNumber;
-
-    /** 作成日時 */
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    /** 更新日時 */
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     // ============================
     // ======== リレーション ========

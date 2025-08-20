@@ -36,12 +36,6 @@ import org.springframework.util.Assert;
 @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
 public class LiveStream extends AbstractSoftDeletableEntity {
 
-    /** 主キー（UUID） */
-    @Id
-    @GeneratedValue
-    @Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false)
-    private UUID id;
-
     /** 配信者（ユーザー）との関連 */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -81,15 +75,6 @@ public class LiveStream extends AbstractSoftDeletableEntity {
 
     /** 配信終了時刻 */
     private LocalDateTime endedAt;
-
-    /** 作成日時（自動設定） */
-    @CreationTimestamp
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
-
-    /** 更新日時（自動設定） */
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
 
     // ============================
     // ======== リレーション ========
