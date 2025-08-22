@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
 @ToString(exclude = {"password", "rememberToken", "primaryEmail", "phoneNumber"})
 @Entity
 @SQLDelete(sql = "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
+@Filter(name = "activeFilter", condition = "deleted_at IS NULL")
 @Table(name = "users",
         indexes = {
                 @Index(name = "idx_user_primary_email_id", columnList = "primary_email_id",
@@ -150,13 +150,13 @@ public class User extends AbstractSoftDeletableEntity {
     /** メールアドレスとの関連（論理削除対応、主メール含む） */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true,
             fetch = FetchType.LAZY)
-    @Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
+    @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
     private List<UserEmail> userEmails = new ArrayList<>();
 
     /** 配信との関連（論理削除対応） */
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
             orphanRemoval = true, fetch = FetchType.LAZY)
-    @Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
+    @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
     private List<LiveStream> liveStreams = new ArrayList<>();
 
     /** アーカイブ動画との関連（物理削除） */

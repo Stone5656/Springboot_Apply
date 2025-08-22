@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
                 @Index(name = "idx_live_stream_status", columnList = "status"),
                 @Index(name = "idx_live_stream_deleted_at", columnList = "deleted_at")})
 @SQLDelete(sql = "UPDATE live_streams SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
+@Filter(name = "activeFilter", condition = "deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LiveStream extends AbstractSoftDeletableEntity {
@@ -82,7 +82,7 @@ public class LiveStream extends AbstractSoftDeletableEntity {
     /** カテゴリとの関連（論理削除対応） */
     @OneToMany(mappedBy = "liveStream", cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
             orphanRemoval = true, fetch = FetchType.LAZY)
-    @Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
+    @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
     private List<LiveStreamCategory> liveStreamCategories = new ArrayList<>();
 
     /** タグとの関連（物理削除） */

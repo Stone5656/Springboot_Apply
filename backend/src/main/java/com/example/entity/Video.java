@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
                 @Index(name = "idx_video_deleted_at", columnList = "deleted_at")})
 @SQLDelete(
         sql = "UPDATE videos SET deleted_at = CURRENT_TIMESTAMP, status = 'DELETED' WHERE id = ?")
-@Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
+@Filter(name = "activeFilter", condition = "deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Video extends AbstractSoftDeletableEntity {
@@ -95,9 +95,13 @@ public class Video extends AbstractSoftDeletableEntity {
     // ============================
 
     /** カテゴリとの関連（論理削除対応） */
-    @OneToMany(mappedBy = "video", cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
-            orphanRemoval = true, fetch = FetchType.LAZY)
-    @Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
+    @OneToMany(
+        mappedBy = "video",
+        cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE },
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
+    @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
     private List<VideoCategory> videoCategories = new ArrayList<>();
 
     /** タグとの関連（物理削除） */

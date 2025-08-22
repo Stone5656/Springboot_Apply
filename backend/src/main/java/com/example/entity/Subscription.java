@@ -1,26 +1,21 @@
 package com.example.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.SQLDelete;
 import com.example.util.entity.AbstractSoftDeletableEntity;
 
-/**
- * ユーザーのフォロー関係（follower -> target）
- */
 @Entity
 @Table(
     name = "subscriptions",
     uniqueConstraints = @UniqueConstraint(
-        name = "uk_subscription_pair",
-        columnNames = {"follower_user_id", "target_user_id"}
+        name = "uk_subscriptions_subscriber_target",
+        columnNames = {"subscriber_id", "target_id"}
     ),
     indexes = {
-        @Index(name = "idx_subscription_follower", columnList = "follower_user_id"),
-        @Index(name = "idx_subscription_target", columnList = "target_user_id")
+        @Index(name = "idx_subscriptions_subscriber", columnList = "subscriber_id"),
+        @Index(name = "idx_subscriptions_target", columnList = "target_id")
     }
 )
 @Getter
@@ -29,18 +24,19 @@ import com.example.util.entity.AbstractSoftDeletableEntity;
 @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
 public class Subscription extends AbstractSoftDeletableEntity {
 
-    /** フォローする側のユーザー */
+    /** フォローする側（= 自分） */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "follower_user_id", nullable = false)
-    private User follower;
+    @JoinColumn(name = "subscriber_id", nullable = false)
+    private User subscriber;
 
-    /** フォローされる側のユーザー */
+    /** フォローされる側（= 相手） */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "target_user_id", nullable = false)
+    @JoinColumn(name = "target_id", nullable = false)
     private User target;
 
-    public Subscription(User follower, User target) {
-        this.follower = follower;
+    @Builder
+    public Subscription(User subscriber, User target) {
+        this.subscriber = subscriber;
         this.target = target;
     }
 }

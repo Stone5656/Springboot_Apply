@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
  * 論理削除可能なエンティティ基底クラス。 - `deleted_at` によるソフトデリート対応
  */
 @MappedSuperclass
-@FilterDef(name = "appActiveFilter")
-@Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
+@FilterDef(name = "activeFilter")
+@Filter(name = "activeFilter", condition = "deleted_at IS NULL")
 @SQLDelete(sql = "UPDATE {h-table} SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 public abstract class AbstractSoftDeletableEntity extends AbstractBaseEntity
         implements com.example.util.DeletionUtils.Deletable {

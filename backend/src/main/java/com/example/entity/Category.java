@@ -26,7 +26,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @SQLDelete(sql = "UPDATE categories SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
+@Filter(name = "activeFilter", condition = "deleted_at IS NULL")
 public class Category extends AbstractSoftDeletableEntity {
 
     // ==========================
@@ -55,11 +55,11 @@ public class Category extends AbstractSoftDeletableEntity {
     // ============================
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
+    @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
     private List<VideoCategory> videoCategories;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
+    @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
     private List<LiveStreamCategory> liveStreamCategories;
 
     // ====================================================
