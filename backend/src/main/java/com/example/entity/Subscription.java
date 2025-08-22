@@ -6,8 +6,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import org.hibernate.annotations.*;
 import com.example.util.entity.AbstractSoftDeletableEntity;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * フォロー関係を表すエンティティ。
@@ -26,15 +24,8 @@ import java.util.UUID;
 )
 @Getter
 @SQLDelete(sql = "UPDATE subscriptions SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND deleted_at IS NULL")
-@FilterDef(name = "activeFilter")
-@Filter(name = "activeFilter", condition = "deleted_at IS NULL")
+@Filter(name = "activeFilter")
 public class Subscription extends AbstractSoftDeletableEntity {
-
-    /** 主キーUUID（BINARY(16)） */
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, updatable = false)
-    private UUID id;
 
     /** フォローするユーザーID（フォロワー） */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -45,16 +36,6 @@ public class Subscription extends AbstractSoftDeletableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "following_user_id", nullable = false)
     private User following;
-
-    /** 作成日時 */
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    /** 更新日時 */
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     // ====================================================
     // ================= コンストラクタ ===================

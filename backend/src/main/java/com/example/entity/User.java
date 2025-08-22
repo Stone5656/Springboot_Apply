@@ -23,7 +23,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
@@ -38,8 +37,7 @@ import org.springframework.util.Assert;
 @ToString(exclude = {"password", "rememberToken", "primaryEmail", "phoneNumber"})
 @Entity
 @SQLDelete(sql = "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@FilterDef(name = "activeFilter")
-@Filter(name = "activeFilter", condition = "deleted_at IS NULL")
+@Filter(name = "activeFilter")
 @Table(name = "users", indexes = {
         @Index(name = "idx_user_primary_email_id", columnList = "primary_email_id", unique = true),
         @Index(name = "idx_user_name", columnList = "name", unique = true),
@@ -153,7 +151,7 @@ public class User extends AbstractSoftDeletableEntity {
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )
-    @Filter(name = "activeUserEmailFilter")
+    @Filter(name = "activeFilter")
     private List<UserEmail> userEmails = new ArrayList<>();
 
     /** 配信との関連（論理削除対応） */
@@ -163,7 +161,7 @@ public class User extends AbstractSoftDeletableEntity {
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )
-    @Filter(name = "activeLiveStreamFilter")
+    @Filter(name = "activeFilter")
     private List<LiveStream> liveStreams = new ArrayList<>();
 
     /** アーカイブ動画との関連（物理削除） */

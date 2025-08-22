@@ -5,17 +5,13 @@ import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
+import com.example.util.entity.AbstractBaseEntity;
 
 /**
  * タグのメタ情報を保持するエンティティ。
  * 動画やライブ配信に付与されるカテゴリ的なラベル。
  *
- * @version 2.0
+ * @version 2.1
  */
 @Entity
 @Table(
@@ -31,13 +27,7 @@ import java.util.UUID;
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Tag {
-
-    /** 主キーUUID（BINARY(16)） */
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, updatable = false)
-    private UUID id;
+public class Tag extends AbstractBaseEntity {
 
     /** タグの名前（画面表示用） */
     @Column(name = "name", nullable = false, length = 255)
@@ -48,16 +38,6 @@ public class Tag {
     @Column(name = "slug", nullable = false, length = 255)
     @Size(max = 255)
     private String slug;
-
-    /** 作成日時 */
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    /** 更新日時 */
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     // ====================================================
     // ================= コンストラクタ ===================

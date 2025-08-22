@@ -20,10 +20,8 @@ import org.springframework.util.Assert;
 /**
  * ライブ配信に関する情報を管理するエンティティ。 配信のタイトル、説明、配信ステータスやスケジュール、削除状態などを保持する。
  *
- * @version 1.1
+ * @version 1.2
  */
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "live_streams", indexes = {
         @Index(name = "idx_live_stream_user_id", columnList = "user_id"),
@@ -32,8 +30,9 @@ import org.springframework.util.Assert;
         @Index(name = "idx_live_stream_status", columnList = "status"),
         @Index(name = "idx_live_stream_deleted_at", columnList = "deleted_at")})
 @SQLDelete(sql = "UPDATE live_streams SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@FilterDef(name = "activeFilter")
-@Filter(name = "activeFilter", condition = "deleted_at IS NULL")
+@Filter(name = "activeFilter")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LiveStream extends AbstractSoftDeletableEntity {
 
     /** 配信者（ユーザー）との関連 */
@@ -87,7 +86,7 @@ public class LiveStream extends AbstractSoftDeletableEntity {
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )
-    @Filter(name = "activeLiveStreamCategoryFilter")
+    @Filter(name = "activeFilter")
     private List<LiveStreamCategory> liveStreamCategories = new ArrayList<>();
 
     /** タグとの関連（物理削除） */

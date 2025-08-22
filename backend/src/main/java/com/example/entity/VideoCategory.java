@@ -5,13 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.UpdateTimestamp;
 import com.example.util.entity.AbstractSoftDeletableEntity;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -29,15 +25,8 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE video_categories SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@FilterDef(name = "activeVideoCategoryFilter")
-@Filter(name = "activeVideoCategoryFilter", condition = "deleted_at IS NULL")
+@Filter(name = "activeFilter")
 public class VideoCategory extends AbstractSoftDeletableEntity {
-
-    /** 主キーUUID（BINARY(16)） */
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, updatable = false)
-    private UUID id;
 
     /** 関連カテゴリ */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -48,16 +37,6 @@ public class VideoCategory extends AbstractSoftDeletableEntity {
     @NotNull
     @Column(name = "video_id", nullable = false)
     private UUID videoId;
-
-    /** 作成日時 */
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    /** 更新日時 */
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     // ===================================================
     // ================== コンストラクタ ==================

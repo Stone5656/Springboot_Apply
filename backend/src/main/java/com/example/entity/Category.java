@@ -6,8 +6,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.SQLDelete;
 import com.example.util.entity.AbstractSoftDeletableEntity;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * 動画や配信のカテゴリを表すエンティティ。
  *
- * @version 2.0
+ * @version 2.1
  */
 @Entity
 @Table(
@@ -30,9 +30,9 @@ import java.util.List;
     }
 )
 @Getter
+@NoArgsConstructor
 @SQLDelete(sql = "UPDATE categories SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@FilterDef(name = "activeFilter")
-@Filter(name = "activeFilter", condition = "deleted_at IS NULL")
+@Filter(name = "activeFilter")
 public class Category extends AbstractSoftDeletableEntity {
 
     // ==========================

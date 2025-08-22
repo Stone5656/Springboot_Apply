@@ -11,12 +11,10 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.*;
-import org.hibernate.type.SqlTypes;
 import org.springframework.util.Assert;
 
 /**
@@ -31,16 +29,10 @@ import org.springframework.util.Assert;
         @Index(name = "idx_video_status_visibility", columnList = "status, visibility"),
         @Index(name = "idx_video_deleted_at", columnList = "deleted_at")})
 @SQLDelete(sql = "UPDATE videos SET deleted_at = CURRENT_TIMESTAMP, status = 'DELETED' WHERE id = ?")
-@FilterDef(name = "activeVideoFilter") @Filter(name = "activeVideoFilter", condition = "deleted_at IS NULL") @Getter
+@Filter(name = "activeFilter")
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Video extends AbstractSoftDeletableEntity {
-
-    /** 動画ID（UUIDベース） */
-    @Id
-    @GeneratedValue
-    @JdbcTypeCode(SqlTypes.UUID)
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
 
     /** 投稿ユーザー。遅延ロード。 */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -96,16 +88,6 @@ public class Video extends AbstractSoftDeletableEntity {
     /** 公開日時（未公開の場合null） */
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
-
-    /** 作成日時（自動設定） */
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    /** 更新日時（自動更新） */
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     // ============================
     // ======== リレーション ========
