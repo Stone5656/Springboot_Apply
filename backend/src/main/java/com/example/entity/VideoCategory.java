@@ -1,14 +1,12 @@
 package com.example.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.SQLDelete;
 import com.example.util.entity.AbstractSoftDeletableEntity;
-import java.util.UUID;
 
 /**
  * 動画に対するカテゴリ付けエンティティ。
@@ -22,7 +20,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE video_categories SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
+@Filter(name = "activeFilter", condition = "deleted_at IS NULL")
 public class VideoCategory extends AbstractSoftDeletableEntity {
 
     /** 関連カテゴリ */
@@ -31,9 +29,9 @@ public class VideoCategory extends AbstractSoftDeletableEntity {
     private Category category;
 
     /** 関連動画ID */
-    @NotNull
-    @Column(name = "video_id", nullable = false)
-    private UUID videoId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "video_id", nullable = false)
+    private Video video;
 
     // ===================================================
     // ================== コンストラクタ ==================
@@ -43,10 +41,10 @@ public class VideoCategory extends AbstractSoftDeletableEntity {
      * コンストラクタ
      *
      * @param category カテゴリ
-     * @param videoId 動画ID
+     * @param video 動画ID
      */
-    public VideoCategory(Category category, UUID videoId) {
+    public VideoCategory(Category category, Video video) {
         this.category = category;
-        this.videoId = videoId;
+        this.video = video;
     }
 }
