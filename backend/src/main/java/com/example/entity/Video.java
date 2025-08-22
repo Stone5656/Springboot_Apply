@@ -23,13 +23,14 @@ import org.springframework.util.Assert;
  * @version 1.1
  */
 @Entity
-@Table(name = "videos", indexes = {
-        @Index(name = "idx_video_user_id", columnList = "user_id"),
-        @Index(name = "idx_video_published_at", columnList = "published_at"),
-        @Index(name = "idx_video_status_visibility", columnList = "status, visibility"),
-        @Index(name = "idx_video_deleted_at", columnList = "deleted_at")})
-@SQLDelete(sql = "UPDATE videos SET deleted_at = CURRENT_TIMESTAMP, status = 'DELETED' WHERE id = ?")
-@Filter(name = "activeFilter")
+@Table(name = "videos",
+        indexes = {@Index(name = "idx_video_user_id", columnList = "user_id"),
+                @Index(name = "idx_video_published_at", columnList = "published_at"),
+                @Index(name = "idx_video_status_visibility", columnList = "status, visibility"),
+                @Index(name = "idx_video_deleted_at", columnList = "deleted_at")})
+@SQLDelete(
+        sql = "UPDATE videos SET deleted_at = CURRENT_TIMESTAMP, status = 'DELETED' WHERE id = ?")
+@Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Video extends AbstractSoftDeletableEntity {
@@ -94,22 +95,14 @@ public class Video extends AbstractSoftDeletableEntity {
     // ============================
 
     /** カテゴリとの関連（論理削除対応） */
-    @OneToMany(
-        mappedBy = "video",
-        cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
-    @Filter(name = "activeFilter")
+    @OneToMany(mappedBy = "video", cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
+            orphanRemoval = true, fetch = FetchType.LAZY)
+    @Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
     private List<VideoCategory> videoCategories = new ArrayList<>();
 
     /** タグとの関連（物理削除） */
-    @OneToMany(
-        mappedBy = "video",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true,
+            fetch = FetchType.LAZY)
     private List<VideoTag> videoTags = new ArrayList<>();
 
     // ===================================================
@@ -119,14 +112,15 @@ public class Video extends AbstractSoftDeletableEntity {
     /**
      * 新規作成用コンストラクタ。
      *
-     * @param title           タイトル（null・空不可）
-     * @param description     説明文（null可）
-     * @param videoPath       動画ファイルの保存パス（null・空不可）
-     * @param thumbnailPath   サムネイル画像のパス（null可）
-     * @param user            投稿ユーザー（null不可）
+     * @param title タイトル（null・空不可）
+     * @param description 説明文（null可）
+     * @param videoPath 動画ファイルの保存パス（null・空不可）
+     * @param thumbnailPath サムネイル画像のパス（null可）
+     * @param user 投稿ユーザー（null不可）
      * @throws IllegalArgumentException パラメータが不正な場合
      */
-    public Video(String title, String description, String videoPath, String thumbnailPath, User user) {
+    public Video(String title, String description, String videoPath, String thumbnailPath,
+            User user) {
         Assert.hasText(title, "タイトルは必須です");
         Assert.hasText(videoPath, "動画パスは必須です");
         Assert.notNull(user, "ユーザーは必須です");
@@ -148,21 +142,29 @@ public class Video extends AbstractSoftDeletableEntity {
     /**
      * メタ情報の更新（nullを無視）。
      *
-     * @param title         タイトル
-     * @param description   説明文
+     * @param title タイトル
+     * @param description 説明文
      * @param thumbnailPath サムネイルパス
-     * @param visibility    公開範囲
-     * @param status        ステータス
+     * @param visibility 公開範囲
+     * @param status ステータス
      */
-    public void updateVideoInfo(String title, String description, String thumbnailPath, VideoVisibility visibility, VideoStatus status) {
-        if (title != null) Assert.hasText(title, "タイトルは空にできません");
-        if (thumbnailPath != null) Assert.hasText(thumbnailPath, "サムネイルパスは空にできません");
+    public void updateVideoInfo(String title, String description, String thumbnailPath,
+            VideoVisibility visibility, VideoStatus status) {
+        if (title != null)
+            Assert.hasText(title, "タイトルは空にできません");
+        if (thumbnailPath != null)
+            Assert.hasText(thumbnailPath, "サムネイルパスは空にできません");
 
-        if (title != null) this.title = title;
-        if (description != null) this.description = description;
-        if (thumbnailPath != null) this.thumbnailPath = thumbnailPath;
-        if (visibility != null) this.visibility = visibility;
-        if (status != null) this.status = status;
+        if (title != null)
+            this.title = title;
+        if (description != null)
+            this.description = description;
+        if (thumbnailPath != null)
+            this.thumbnailPath = thumbnailPath;
+        if (visibility != null)
+            this.visibility = visibility;
+        if (status != null)
+            this.status = status;
     }
 
     // ===================================================

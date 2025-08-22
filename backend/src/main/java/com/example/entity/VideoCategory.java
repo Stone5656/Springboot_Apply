@@ -14,18 +14,15 @@ import java.util.UUID;
  * 動画に対するカテゴリ付けエンティティ。
  */
 @Entity
-@Table(
-    name = "video_categories",
-    uniqueConstraints = @UniqueConstraint(name = "uk_video_category", columnNames = {"category_id", "video_id"}),
-    indexes = {
-        @Index(name = "idx_video_category_category_id", columnList = "category_id"),
-        @Index(name = "idx_video_category_video_id", columnList = "video_id")
-    }
-)
+@Table(name = "video_categories",
+        uniqueConstraints = @UniqueConstraint(name = "uk_video_category",
+                columnNames = {"category_id", "video_id"}),
+        indexes = {@Index(name = "idx_video_category_category_id", columnList = "category_id"),
+                @Index(name = "idx_video_category_video_id", columnList = "video_id")})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE video_categories SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@Filter(name = "activeFilter")
+@Filter(name = "appActiveFilter", condition = "deleted_at IS NULL")
 public class VideoCategory extends AbstractSoftDeletableEntity {
 
     /** 関連カテゴリ */
