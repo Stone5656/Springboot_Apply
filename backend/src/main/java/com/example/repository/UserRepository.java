@@ -8,17 +8,23 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-    Optional<User> findByEmail(String email);
+    // 1) 派生クエリ（入れ子を辿る）：primaryEmail.email
+    Optional<User> findByPrimaryEmailEmailIgnoreCase(String email);
 
-    @Query("SELECT u FROM User u WHERE u.email = :email")
-    Optional<User> findByEmailIncludingDeleted(@Param("email")
-    String email);
+    // 2) JPQL で join（こちらもフィルタ有効時は削除済みが除外されます）
+    @Query("""
+      SELECT u
+      FROM User u
+      JOIN u.primaryEmail pe
+      WHERE LOWER(pe.email) = LOWER(:email)
+    """)
+    Optional<User> findByEmailIncludingDeleted(@Param("email") String email);
 
     @Query("SELECT u FROM User u WHERE u.id = :id")
-    Optional<User> findByIdIncludingDeleted(@Param("id")
-    UUID id);
+    Optional<User> findByIdIncludingDeleted(@Param("id") UUID id);
 
-    @Modifying @Query("UPDATE User u SET u.deleted = false WHERE u.id = :id")
-    void restoreById(@Param("id")
-    UUID id);
+    // 3) 論理復元：deletedAt 方式なら NULL に戻す
+    @Modifying
+    @Query("UPDATE User u SET u.deletedAt = NULL WHERE u.id = :id")
+    void restoreById(@Param("id") UUID id);
 }
