@@ -4,17 +4,14 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
+import lombok.NoArgsConstructor;
+import com.example.util.entity.AbstractBaseEntity;
 
 /**
  * ライブ配信中のチャットメッセージを表すエンティティ。
  * 各メッセージには配信とユーザーの関連が必要。
  *
- * @version 2.0
+ * @version 2.1
  */
 @Entity
 @Table(
@@ -25,13 +22,8 @@ import java.util.UUID;
     }
 )
 @Getter
-public class ChatMessage {
-
-    /** 主キーUUID（BINARY(16)） */
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, updatable = false)
-    private UUID id;
+@NoArgsConstructor
+public class ChatMessage extends AbstractBaseEntity {
 
     /** メッセージを投稿した配信ID */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -48,16 +40,6 @@ public class ChatMessage {
     @Size(max = 500)
     @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     private String message;
-
-    /** 作成日時 */
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    /** 更新日時 */
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     // ====================================================
     // ================= コンストラクタ ===================

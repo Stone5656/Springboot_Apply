@@ -3,16 +3,12 @@ package com.example.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
+import com.example.util.entity.AbstractBaseEntity;
 
 /**
  * 動画に付与されたタグの中間テーブルエンティティ。
  *
- * @version 1.0
+ * @version 1.1
  */
 @Entity
 @Table(
@@ -27,13 +23,7 @@ import java.util.UUID;
 )
 @Getter
 @NoArgsConstructor
-public class VideoTag {
-
-    /** 主キー UUID（BINARY(16)） */
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, updatable = false)
-    private UUID id;
+public class VideoTag extends AbstractBaseEntity {
 
     /** 対象動画 */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -44,16 +34,6 @@ public class VideoTag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id", nullable = false)
     private Tag tag;
-
-    /** 作成日時 */
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    /** 更新日時 */
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     // ====================================================
     // ================= コンストラクタ ===================

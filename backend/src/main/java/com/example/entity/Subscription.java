@@ -1,97 +1,42 @@
 package com.example.entity;
 
 import jakarta.persistence.*;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import org.hibernate.annotations.*;
+import lombok.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.SQLDelete;
 import com.example.util.entity.AbstractSoftDeletableEntity;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
-/**
- * フォロー関係を表すエンティティ。
- * follower_user_id が following_user_id をフォローしている関係を保持。
- *
- * @version 2.0
- */
 @Entity
 @Table(
     name = "subscriptions",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"follower_user_id", "following_user_id"}),
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_subscriptions_subscriber_target",
+        columnNames = {"subscriber_id", "target_id"}
+    ),
     indexes = {
-        @Index(name = "idx_subscriptions_follower", columnList = "follower_user_id"),
-        @Index(name = "idx_subscriptions_following", columnList = "following_user_id")
+        @Index(name = "idx_subscriptions_subscriber", columnList = "subscriber_id"),
+        @Index(name = "idx_subscriptions_target", columnList = "target_id")
     }
 )
 @Getter
-@SQLDelete(sql = "UPDATE subscriptions SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND deleted_at IS NULL")
-@FilterDef(name = "activeFilter")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE subscriptions SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
 public class Subscription extends AbstractSoftDeletableEntity {
 
-    /** 主キーUUID（BINARY(16)） */
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, updatable = false)
-    private UUID id;
+    /** フォローする側（= 自分） */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "subscriber_id", nullable = false)
+    private User subscriber;
 
-    /** フォローするユーザーID（フォロワー） */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "follower_user_id", nullable = false)
-    private User follower;
+    /** フォローされる側（= 相手） */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "target_id", nullable = false)
+    private User target;
 
-    /** フォローされるユーザーID（フォロー対象） */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "following_user_id", nullable = false)
-    private User following;
-
-    /** 作成日時 */
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    /** 更新日時 */
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    // ====================================================
-    // ================= コンストラクタ ===================
-    // ====================================================
-
-    /**
-     * Subscription エンティティの唯一のコンストラクタ
-     *
-     * @param follower フォロワー
-     * @param following フォロー対象
-     */
-    public Subscription(User follower, User following) {
-        this.follower = follower;
-        this.following = following;
-    }
-
-    // ====================================================
-    // =================== 業務ロジック ===================
-    // ====================================================
-
-    /**
-     * 指定ユーザーがこのフォロー関係のフォロワーかどうかを確認します。
-     *
-     * @param user ユーザー
-     * @return フォロワーであれば true
-     */
-    public boolean isFollower(User user) {
-        return this.follower != null && this.follower.equals(user);
-    }
-
-    /**
-     * 指定ユーザーがこのフォロー関係のフォロー対象かどうかを確認します。
-     *
-     * @param user ユーザー
-     * @return フォロー対象であれば true
-     */
-    public boolean isFollowing(User user) {
-        return this.following != null && this.following.equals(user);
+    @Builder
+    public Subscription(User subscriber, User target) {
+        this.subscriber = subscriber;
+        this.target = target;
     }
 }

@@ -49,7 +49,7 @@ public class UserService {
         if (!StringUtils.hasText(request.getPassword()))
             throw new IllegalArgumentException("パスワードは必須です");
 
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByPrimaryEmailEmailIgnoreCase(request.getEmail()).isPresent()) {
             throw new IllegalArgumentException("このメールアドレスは既に登録されています");
         }
 
@@ -69,7 +69,7 @@ public class UserService {
      *             認証失敗時
      */
     public LoginResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByPrimaryEmailEmailIgnoreCase(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("メールアドレスまたはパスワードが間違っています"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {

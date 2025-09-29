@@ -20,20 +20,19 @@ import org.springframework.util.Assert;
 /**
  * ライブ配信に関する情報を管理するエンティティ。 配信のタイトル、説明、配信ステータスやスケジュール、削除状態などを保持する。
  *
- * @version 1.1
+ * @version 1.2
  */
+@Entity
+@Table(name = "live_streams",
+        indexes = {@Index(name = "idx_live_stream_user_id", columnList = "user_id"),
+                @Index(name = "idx_live_stream_stream_key", columnList = "stream_key"),
+                @Index(name = "idx_live_stream_scheduled_at", columnList = "scheduled_at"),
+                @Index(name = "idx_live_stream_status", columnList = "status"),
+                @Index(name = "idx_live_stream_deleted_at", columnList = "deleted_at")})
+@SQLDelete(sql = "UPDATE live_streams SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@Filter(name = "activeFilter", condition = "deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity
-@Table(name = "live_streams", indexes = {
-        @Index(name = "idx_live_stream_user_id", columnList = "user_id"),
-        @Index(name = "idx_live_stream_stream_key", columnList = "stream_key"),
-        @Index(name = "idx_live_stream_scheduled_at", columnList = "scheduled_at"),
-        @Index(name = "idx_live_stream_status", columnList = "status"),
-        @Index(name = "idx_live_stream_deleted_at", columnList = "deleted_at")})
-@SQLDelete(sql = "UPDATE live_streams SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@FilterDef(name = "activeFilter")
-@Filter(name = "activeFilter", condition = "deleted_at IS NULL")
 public class LiveStream extends AbstractSoftDeletableEntity {
 
     /** 配信者（ユーザー）との関連 */
@@ -81,31 +80,19 @@ public class LiveStream extends AbstractSoftDeletableEntity {
     // ============================
 
     /** カテゴリとの関連（論理削除対応） */
-    @OneToMany(
-        mappedBy = "liveStream",
-        cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
-    @Filter(name = "activeLiveStreamCategoryFilter")
+    @OneToMany(mappedBy = "liveStream", cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
+            orphanRemoval = true, fetch = FetchType.LAZY)
+    @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
     private List<LiveStreamCategory> liveStreamCategories = new ArrayList<>();
 
     /** タグとの関連（物理削除） */
-    @OneToMany(
-        mappedBy = "liveStream",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "liveStream", cascade = CascadeType.ALL, orphanRemoval = true,
+            fetch = FetchType.LAZY)
     private List<LiveStreamTag> liveStreamTags = new ArrayList<>();
 
     /** チャットメッセージとの関連（物理削除） */
-    @OneToMany(
-        mappedBy = "liveStream",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "liveStream", cascade = CascadeType.ALL, orphanRemoval = true,
+            fetch = FetchType.LAZY)
     private List<ChatMessage> chatMessages = new ArrayList<>();
 
     // ===================================================
@@ -115,14 +102,15 @@ public class LiveStream extends AbstractSoftDeletableEntity {
     /**
      * 新規ライブ配信作成用のコンストラクタ。
      *
-     * @param title         配信タイトル（null・空不可）
-     * @param description   説明文（null可）
+     * @param title 配信タイトル（null・空不可）
+     * @param description 説明文（null可）
      * @param thumbnailPath サムネイルパス（null可）
-     * @param scheduledAt   配信予定日時（null不可）
-     * @param user          配信ユーザー（null不可）
+     * @param scheduledAt 配信予定日時（null不可）
+     * @param user 配信ユーザー（null不可）
      * @throws IllegalArgumentException 不正な引数が渡された場合
      */
-    public LiveStream(String title, String description, String thumbnailPath, LocalDateTime scheduledAt, User user) {
+    public LiveStream(String title, String description, String thumbnailPath,
+            LocalDateTime scheduledAt, User user) {
         Assert.hasText(title, "タイトルは必須です");
         Assert.notNull(scheduledAt, "配信予定日時は必須です");
         Assert.notNull(user, "配信ユーザーは必須です");
@@ -153,8 +141,7 @@ public class LiveStream extends AbstractSoftDeletableEntity {
     // ===================================================
 
     /**
-     * 配信を開始します。
-     * ステータスをLIVEに変更し、開始時刻を現在時刻で記録します。
+     * 配信を開始します。 ステータスをLIVEに変更し、開始時刻を現在時刻で記録します。
      */
     public void open() {
         this.status = StreamStatus.LIVE;
@@ -162,8 +149,7 @@ public class LiveStream extends AbstractSoftDeletableEntity {
     }
 
     /**
-     * 配信を終了します。
-     * ステータスをENDEDに変更し、終了時刻を現在時刻で記録します。
+     * 配信を終了します。 ステータスをENDEDに変更し、終了時刻を現在時刻で記録します。
      */
     public void close() {
         this.status = StreamStatus.ENDED;
@@ -171,8 +157,7 @@ public class LiveStream extends AbstractSoftDeletableEntity {
     }
 
     /**
-     * 配信をキャンセルします。
-     * ステータスをCANCELLEDに変更し、終了時刻を現在時刻で記録します。
+     * 配信をキャンセルします。 ステータスをCANCELLEDに変更し、終了時刻を現在時刻で記録します。
      */
     public void cancel() {
         this.status = StreamStatus.CANCELLED;
@@ -186,16 +171,20 @@ public class LiveStream extends AbstractSoftDeletableEntity {
     /**
      * タイトル、説明、サムネイルパスを更新します。null項目はスキップされます。
      *
-     * @param title         新しいタイトル（null可）
-     * @param description   新しい説明（null可）
+     * @param title 新しいタイトル（null可）
+     * @param description 新しい説明（null可）
      * @param thumbnailPath 新しいサムネイルパス（null可）
      */
     public void updateLiveStreamInfo(String title, String description, String thumbnailPath) {
-        if (title != null) Assert.hasText(title, "タイトルは空にできません");
+        if (title != null)
+            Assert.hasText(title, "タイトルは空にできません");
 
-        if (title != null) this.title = title;
-        if (description != null) this.description = description;
-        if (thumbnailPath != null) this.thumbnailPath = thumbnailPath;
+        if (title != null)
+            this.title = title;
+        if (description != null)
+            this.description = description;
+        if (thumbnailPath != null)
+            this.thumbnailPath = thumbnailPath;
     }
 
     /**

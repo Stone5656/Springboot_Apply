@@ -6,8 +6,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.SQLDelete;
 import com.example.util.entity.AbstractSoftDeletableEntity;
 import java.util.List;
@@ -15,23 +15,17 @@ import java.util.List;
 /**
  * 動画や配信のカテゴリを表すエンティティ。
  *
- * @version 2.0
+ * @version 2.1
  */
 @Entity
-@Table(
-    name = "categories",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uk_category_name", columnNames = "name"),
-        @UniqueConstraint(name = "uk_category_slug", columnNames = "slug")
-    },
-    indexes = {
-        @Index(name = "idx_category_name", columnList = "name"),
-        @Index(name = "idx_category_slug", columnList = "slug")
-    }
-)
+@Table(name = "categories",
+        uniqueConstraints = {@UniqueConstraint(name = "uk_category_name", columnNames = "name"),
+                @UniqueConstraint(name = "uk_category_slug", columnNames = "slug")},
+        indexes = {@Index(name = "idx_category_name", columnList = "name"),
+                @Index(name = "idx_category_slug", columnList = "slug")})
 @Getter
+@NoArgsConstructor
 @SQLDelete(sql = "UPDATE categories SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@FilterDef(name = "activeFilter")
 @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
 public class Category extends AbstractSoftDeletableEntity {
 
@@ -61,11 +55,11 @@ public class Category extends AbstractSoftDeletableEntity {
     // ============================
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Filter(name = "activeFilter")
+    @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
     private List<VideoCategory> videoCategories;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Filter(name = "activeFilter")
+    @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
     private List<LiveStreamCategory> liveStreamCategories;
 
     // ====================================================
@@ -114,13 +108,12 @@ public class Category extends AbstractSoftDeletableEntity {
     // ===================================================
 
     /**
-     * このエンティティを論理削除状態にします。
-     * すでに削除済みであれば何もしません。
-     * カテゴリとの関連がある場合はカスケードで子要素も削除します。
+     * このエンティティを論理削除状態にします。 すでに削除済みであれば何もしません。 カテゴリとの関連がある場合はカスケードで子要素も削除します。
      */
     @Override
     public void softDelete() {
-        if (isDeleted()) return;
+        if (isDeleted())
+            return;
         super.softDelete(); // 親で共通処理
         softDeleteEntities(videoCategories);
         softDeleteEntities(liveStreamCategories);
