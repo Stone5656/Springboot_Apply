@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 public interface UserRepository extends JpaRepository<User, UUID> {
 
     // 1) 派生クエリ（入れ子を辿る）：primaryEmail.email
+    @EntityGraph(attributePaths = "primaryEmail")   // ← これを追加
     Optional<User> findByPrimaryEmailEmailIgnoreCase(String email);
 
     // 2) JPQL で join（こちらもフィルタ有効時は削除済みが除外されます）

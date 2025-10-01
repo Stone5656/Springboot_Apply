@@ -1,64 +1,42 @@
+// com.example.security.UserPrincipal
 package com.example.security;
 
 import com.example.entity.User;
-import com.example.entity.UserEmail;
 import com.example.enums.UserRole;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import lombok.Getter;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Getter
-public class UserPrincipal implements UserDetails {
-
+public final class UserPrincipal implements UserDetails {
     private final UUID id;
-    private final UserEmail email;
+    private final String username;   // ← ここは生のメール文字列
     private final String password;
     private final UserRole role;
 
-    public UserPrincipal(User user) {
-        this.id = user.getId();
-        this.email = user.getPrimaryEmail();
-        this.password = user.getPassword();
-        this.role = user.getRole();
+    public UserPrincipal(UUID id, String username, String password, UserRole role) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("username(email) は必須です");
+        }
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.role = role;
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities()
-    {
+    public static UserPrincipal from(User u) {
+        String email = (u.getPrimaryEmail() != null) ? u.getPrimaryEmail().getEmail() : null;
+        return new UserPrincipal(u.getId(), email, u.getPassword(), u.getRole());
+    }
+
+    @Override public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
-
-    @Override
-    public String getUsername()
-    {
-        return email.getEmail();
-    }
-
-    @Override
-    public boolean isAccountNonExpired()
-    {
-        return true; // 必要に応じて変更
-    }
-
-    @Override
-    public boolean isAccountNonLocked()
-    {
-        return true; // 必要に応じて変更
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired()
-    {
-        return true; // 必要に応じて変更
-    }
-
-    @Override
-    public boolean isEnabled()
-    {
-        return true; // メール認証後などで切り替えてもOK
-    }
+    @Override public String getUsername() { return username; } // ← JPAに触らない
+    @Override public boolean isAccountNonExpired()     { return true; }
+    @Override public boolean isAccountNonLocked()      { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled()               { return true; }
 }

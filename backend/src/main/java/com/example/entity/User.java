@@ -55,9 +55,15 @@ public class User extends AbstractSoftDeletableEntity {
     private String name;
 
     /** 主メールアドレス（UserEmail とのリレーション） */
-    @NotNull
-    @OneToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "primary_email_id", nullable = false)
+    @OneToMany(mappedBy = "user",
+               cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+               orphanRemoval = true)
+    private List<UserEmail> emails = new ArrayList<>();
+
+    @OneToOne(fetch = FetchType.LAZY, optional = true,
+          cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+          orphanRemoval = true)
+    @JoinColumn(name = "primary_email_id", nullable = true, unique = true)
     private UserEmail primaryEmail;
 
     /** メールアドレス認証日時 */
@@ -195,6 +201,26 @@ public class User extends AbstractSoftDeletableEntity {
             throw new IllegalArgumentException("電話番号が長すぎます（最大30文字）");
         }
         this.phoneNumber = newPhoneNumber;
+    }
+
+    public void setPrimaryEmail(UserEmail email) {
+        this.primaryEmail = email;
+        if (email != null && email.getUser() != this) {
+            email.setUser(this);
+        }
+    }
+    
+    public void addEmail(UserEmail email) {
+        if (email == null) return;
+        // 同一メールの重複追加を避ける（equals/hashCode未実装でも動くようemailで判定）
+        boolean exists = this.emails.stream()
+            .anyMatch(e -> e.getEmail().equalsIgnoreCase(email.getEmail()));
+        if (!exists) {
+            this.emails.add(email);
+        }
+        if (email.getUser() != this) {
+            email.setUser(this);
+        }
     }
 
     // ===================================================
@@ -337,7 +363,8 @@ public class User extends AbstractSoftDeletableEntity {
         Assert.hasText(name, "名前は必須です");
         Assert.hasText(email, "メールアドレスは必須です");
         this.name = name;
-        this.primaryEmail = new UserEmail(email, this, true);
+        UserEmail emailEntity = new UserEmail(email, this);
+        this.setPrimaryEmail(emailEntity);  // 双方向リンクとisPrimaryをここで確実に同期
     }
 
     /**
@@ -377,11 +404,39 @@ public class User extends AbstractSoftDeletableEntity {
      */
     public void changeEmail(String newEmail) {
         Assert.hasText(newEmail, "メアド無いでっせ");
+        final String normalized = newEmail.trim();
 
-        if (!this.primaryEmail.getEmail().equals(newEmail)) {
-            this.primaryEmail = new UserEmail(newEmail, this, true);
-            this.emailVerifiedAt = null;
+        // すでに同一なら何もしない（大小文字差異は無視する例）
+        if (this.primaryEmail != null &&
+            normalized.equalsIgnoreCase(this.primaryEmail.getEmail())) {
+            return;
         }
+
+        // 1) 旧primaryがあれば、先にemailsへ退避（orphan回避のため先にやる）
+        if (this.primaryEmail != null) {
+            this.addEmail(this.primaryEmail); // 双方向同期しつつ重複も吸収
+        }
+
+        // 2) 既存のサブメールに同じアドレスがあるなら「昇格」させる
+        UserEmail existing =
+            this.emails.stream()
+                .filter(e -> normalized.equalsIgnoreCase(e.getEmail()))
+                .findFirst()
+                .orElse(null);
+
+        if (existing != null) {
+            // primaryに昇格させ、リストからは外す（リストは“非primaryの集合”とする設計）
+            this.setPrimaryEmail(existing); // 双方向同期
+            this.emails.remove(existing);
+        } else {
+            // 3) なければ新規primaryを作成
+            UserEmail fresh = new UserEmail(normalized, this); // いまのコンストラクタに合わせる
+            this.setPrimaryEmail(fresh);                      // 双方向同期
+            // CascadeType.PERSIST があれば user.save(...) で一緒にINSERTされる
+        }
+
+        // 4) 認証状態をリセット
+        this.emailVerifiedAt = null;
     }
 
     // ===================================================

@@ -29,16 +29,13 @@ public class UserEmail extends AbstractBaseEntity {
     @Email
     @NotBlank
     @Size(max = 320)
-    @Column(nullable = false, length = 320)
+    @Column(nullable = false, unique = true, length = 320)
     private String email;
 
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
 
-    @Column(name = "is_primary", nullable = false)
-    private boolean isPrimary = false;
-
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -47,9 +44,8 @@ public class UserEmail extends AbstractBaseEntity {
      *
      * @param email メールアドレス（320文字以内・必須）
      * @param user 関連付けるユーザー（必須）
-     * @param isPrimary 主メールアドレスかどうかのフラグ
      */
-    public UserEmail(String email, User user, boolean isPrimary) {
+    public UserEmail(String email, User user) {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("メールアドレスは必須です");
         }
@@ -58,10 +54,17 @@ public class UserEmail extends AbstractBaseEntity {
         }
         this.email = email;
         this.user = user;
-        this.isPrimary = isPrimary;
     }
 
     public void resetVerification() {
         this.verifiedAt = null;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+        // 逆側へもつなぐ（重複追加防止は必要ならチェック）
+        if (user != null && !user.getEmails().contains(this)) {
+            user.getEmails().add(this);
+        }
     }
 }
