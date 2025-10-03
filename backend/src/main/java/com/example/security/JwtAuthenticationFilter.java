@@ -13,49 +13,50 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component @RequiredArgsConstructor
+@Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtUtils jwtUtils;
     private final CustomUserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException
-    {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
-        String jwt = null;
-        String userEmail = null;
-
-        if (authHeader != null && authHeader.startsWith("Bearer "))
-        {
-            try
-            {
-                jwt = authHeader.substring(7);
-                userEmail = jwtUtils.getEmailFromToken(jwt);
-            } catch (Exception e)
-            {
-                System.err.printf("JWTの解析に失敗しました: {}", e.getMessage());
-            }
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            chain.doFilter(request, response); // ← トークン無ければ素通し
+            return;
         }
 
-        // SecurityContext にまだ認証情報がセットされていない場合のみ処理
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null)
-        {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-
-            if (jwtUtils.validateJwtToken(jwt))
-            {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
-                        null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // 認証情報をセキュリティコンテキストに設定
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+        String token = authHeader.substring(7);
+        try {
+            // 1) まずトークンの署名/期限などを検証
+            if (!jwtUtils.validateJwtToken(token)) {
+                // 無効トークンは“無視して素通し”。ここでレスポンスは書かない
+                log.debug("Invalid JWT: skip authentication");
+                chain.doFilter(request, response);
+                return;
             }
+
+            // 2) 有効ならクレームから主体（email/username）を取り出す
+            String username = jwtUtils.getEmailFromToken(token);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails user = userDetailsService.loadUserByUsername(username);
+
+                // 3) 認証トークン作成（isAuthenticated=true のコンストラクタ）
+                var auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+        } catch (Exception ex) {
+            // 解析/検証で例外が出ても“素通し”する（401/403は後段の仕組みに任せる）
+            log.debug("JWT parse/validate failed: {}", ex.getMessage());
         }
 
-        filterChain.doFilter(request, response);
+        chain.doFilter(request, response);
     }
 }

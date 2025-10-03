@@ -20,6 +20,9 @@ public final class UserPrincipal implements UserDetails {
         if (username == null || username.isBlank()) {
             throw new IllegalArgumentException("username(email) は必須です");
         }
+        if (role == null) {
+            throw new IllegalArgumentException("role は必須です");
+        }
         this.id = id;
         this.username = username;
         this.password = password;
@@ -28,6 +31,9 @@ public final class UserPrincipal implements UserDetails {
 
     public static UserPrincipal from(User u) {
         String email = (u.getPrimaryEmail() != null) ? u.getPrimaryEmail().getEmail() : null;
+        if (email == null || email.isBlank()) {
+            throw new IllegalStateException("User.primaryEmail.email が未設定です");
+        }
         return new UserPrincipal(u.getId(), email, u.getPassword(), u.getRole());
     }
 

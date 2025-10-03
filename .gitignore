@@ -39,7 +39,7 @@ Thumbs.db
 .vscode-remote/
 
 # Personal documentation and notes (not tracked in version control)
-mynote/*
+mynote/*.puml
 
 # Enviroments
 backend/src/main/resources/*
