@@ -1,12 +1,20 @@
-// com.example.security.SecurityRuleApplier
+// src/main/java/com/example/security/SecurityRuleApplier.java
 package com.example.security;
+
+import static com.example.security.SecurityRulesProperties.Rule.Access;
+import static org.springframework.util.StringUtils.hasText;
 
 import java.util.List;
 import java.util.Objects;
+
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizedUrl;
 
 @Component
 public class SecurityRuleApplier {
@@ -15,70 +23,102 @@ public class SecurityRuleApplier {
                     SecurityRulesProperties props,
                     MvcRequestMatcher.Builder mvc) throws Exception {
 
-    http.authorizeHttpRequests(auth -> {
-      var rules = props.getRules();
-      if (rules == null) return;
+    http.authorizeHttpRequests(reg -> {
+      for (var rule : props.getRules()) {
+        final var pattern = Objects.requireNonNull(rule.getPattern(), "pattern is required");
+        final var methods = rule.getMethods();
 
-      for (int i = 0; i < rules.size(); i++) {
-        var r = rules.get(i);
-
-        var methods = (r.getMethods() == null || r.getMethods().isEmpty())
-            ? List.<HttpMethod>of()
-            : r.getMethods().stream().map(HttpMethod::valueOf).toList();
-
-        var matchers = methods.isEmpty()
-            ? List.of(mvc.pattern(r.getPattern()))
-            : methods.stream().map(m -> mvc.pattern(m, r.getPattern())).toList();
-
-        for (var m : matchers) {
-          switch (String.valueOf(r.getAccess())) {
-            case "permitAll"      -> auth.requestMatchers(m).permitAll();
-            case "authenticated"  -> auth.requestMatchers(m).authenticated();
-
-            // === 追加: hasRole / hasAnyRole ===
-            case "hasRole" -> {
-              var roles = normalizeRoles(requireList(r.getAuthorities(), i, r.getPattern()));
-              if (roles.size() != 1) {
-                throw new IllegalArgumentException(
-                  "app.security.rules[" + i + "] pattern=" + r.getPattern()
-                  + " requires exactly 1 role for access=hasRole");
-              }
-              auth.requestMatchers(m).hasRole(roles.get(0)); // ADMIN → ROLE_ADMIN に自動変換
+        if (CollectionUtils.isEmpty(methods)) {
+          AuthorizedUrl url = reg.requestMatchers(mvc.pattern(pattern));
+          applyAccess(url, rule);
+        } else {
+          for (String m : methods) {
+            final HttpMethod hm;
+            try {
+              hm = HttpMethod.valueOf(m.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+              throw new IllegalArgumentException("Unsupported HTTP method in YAML: " + m, ex);
             }
-            case "hasAnyRole" -> {
-              var roles = normalizeRoles(requireList(r.getAuthorities(), i, r.getPattern()));
-              auth.requestMatchers(m).hasAnyRole(roles.toArray(String[]::new));
-            }
-
-            // 既存: hasAuthority / hasAnyAuthority
-            case "hasAuthority", "hasAnyAuthority" -> {
-              var authorities = requireList(r.getAuthorities(), i, r.getPattern());
-              auth.requestMatchers(m).hasAnyAuthority(authorities.toArray(String[]::new));
-            }
-
-            default -> throw new IllegalArgumentException(
-              "Unknown access '" + r.getAccess() + "' at rules[" + i + "] pattern=" + r.getPattern());
+            AuthorizedUrl url = reg.requestMatchers(mvc.pattern(hm, pattern));
+            applyAccess(url, rule);
           }
         }
       }
+      reg.anyRequest().denyAll();
     });
   }
 
-  private static List<String> requireList(List<String> list, int idx, String pattern) {
-    if (list == null || list.isEmpty() || list.stream().anyMatch(Objects::isNull)) {
-      throw new IllegalArgumentException(
-        "app.security.rules[" + idx + "] pattern=" + pattern + " requires non-empty 'authorities'");
-    }
-    return list;
+  public void apply(HttpSecurity http,
+                    SecurityRulesProperties props) throws Exception {
+
+    http.authorizeHttpRequests(reg -> {
+      for (var rule : props.getRules()) {
+        final var pattern = Objects.requireNonNull(rule.getPattern(), "pattern is required");
+        final var methods = rule.getMethods();
+
+        if (CollectionUtils.isEmpty(methods)) {
+          AuthorizedUrl url = reg.requestMatchers(new AntPathRequestMatcher(pattern));
+          applyAccess(url, rule);
+        } else {
+          for (String m : methods) {
+            final HttpMethod hm;
+            try {
+              hm = HttpMethod.valueOf(m.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+              throw new IllegalArgumentException("Unsupported HTTP method in YAML: " + m, ex);
+            }
+            AuthorizedUrl url = reg.requestMatchers(new AntPathRequestMatcher(pattern, hm.name()));
+            applyAccess(url, rule);
+          }
+        }
+      }
+      reg.anyRequest().denyAll();
+    });
   }
 
-  /**
-   * hasRole/hasAnyRole 用に ROLE_ 接頭辞を付けず記述してもらう前提だが、
-   * 誤って ROLE_ を書かれても動くように安全に剥がしておく。
-   */
+  private void applyAccess(AuthorizedUrl url, SecurityRulesProperties.Rule rule) {
+    var access = Objects.requireNonNull(rule.getAccess(), "access is required");
+
+    switch (access) {
+      case PERMIT_ALL        -> url.permitAll();
+      case AUTHENTICATED     -> url.authenticated();
+
+      case HAS_ROLE          -> url.hasRole(requireExactlyOne(normalizeRoles(rule.getRoles()), "roles"));
+      case HAS_ANY_ROLE      -> url.hasAnyRole(requireAtLeastOne(normalizeRoles(rule.getRoles()), "roles"));
+
+      case HAS_AUTHORITY     -> url.hasAuthority(requireExactlyOne(rule.getAuthorities(), "authorities"));
+      case HAS_ANY_AUTHORITY -> url.hasAnyAuthority(requireAtLeastOne(rule.getAuthorities(), "authorities"));
+
+      case EXPRESSION -> {
+        String expr = rule.getExpression();
+        if (!hasText(expr)) {
+          throw new IllegalArgumentException("EXPRESSION requires non-empty 'expression'");
+        }
+        url.access(new WebExpressionAuthorizationManager(expr));
+      }
+    }
+  }
+
+  private static String requireExactlyOne(List<String> list, String field) {
+    if (CollectionUtils.isEmpty(list) || list.size() != 1) {
+      throw new IllegalArgumentException("Exactly one value required for '" + field + "'");
+    }
+    return list.get(0);
+  }
+
+  private static String[] requireAtLeastOne(List<String> list, String field) {
+    if (CollectionUtils.isEmpty(list)) {
+      throw new IllegalArgumentException("At least one value required for '" + field + "'");
+    }
+    return list.toArray(String[]::new);
+  }
+
   private static List<String> normalizeRoles(List<String> roles) {
+    if (roles == null) return List.of();
     return roles.stream()
-      .map(r -> r.startsWith("ROLE_") ? r.substring(5) : r)
-      .toList();
+        .filter(Objects::nonNull)
+        .map(r -> r.startsWith("ROLE_") ? r.substring(5) : r)
+        .toList();
   }
 }
+

@@ -5,9 +5,10 @@ logging:
 app:
   security:
     rules:
-      - { pattern: /api/hello/public, methods: [GET], access: permitAll }
-      - { pattern: /api/hello/private, methods: [GET], access: authenticated }
-      - { pattern: /api/admin/api, methods: [GET], access: hasAuthority, authorities: [ROLE_ADMIN] }
+      - { pattern: /api/hello/public, methods: [GET], access: PERMIT_ALL }
+      - { pattern: /api/hello/private, methods: [GET], access: AUTHENTICATED }
+      - { pattern: /api/admin/ping, methods: [GET], access: HAS_ROLE, roles: [ADMIN] }
+
 spring:
   output:
     ansi:
