@@ -5,9 +5,52 @@ logging:
 app:
   security:
     rules:
+      # ---------------------------
+      # 先に「要認証」で縛る（衝突回避）
+      # ---------------------------
+      - { pattern: /api/videos/my, methods: [GET], access: AUTHENTICATED }
+
+      # ---------------------------
+      # 公開API（匿名許可の“例外”）—個別列挙
+      # ---------------------------
+
+      # Hello（例）
       - { pattern: /api/hello/public, methods: [GET], access: PERMIT_ALL }
+
+      # UserController（匿名OK）
+      - { pattern: /api/users/register, methods: [POST], access: PERMIT_ALL }
+      - { pattern: /api/users/login,    methods: [POST], access: PERMIT_ALL }
+
+      # VideoController（公開系）
+      - { pattern: /api/videos,                     methods: [GET],   access: PERMIT_ALL }   # ← ルート検索のみ
+      - { pattern: "/api/videos/{id}",              methods: [GET],   access: PERMIT_ALL }
+      - { pattern: "/api/videos/user/{userId}",     methods: [GET],   access: PERMIT_ALL }
+      - { pattern: /api/videos/popular,             methods: [GET],   access: PERMIT_ALL }
+      - { pattern: /api/videos/recent,              methods: [GET],   access: PERMIT_ALL }
+      - { pattern: "/api/videos/{id}/views",        methods: [PATCH], access: PERMIT_ALL }
+
+      # LiveStreamController（公開系）
+      - { pattern: "/api/live-streams/{id}",                   methods: [GET], access: PERMIT_ALL }
+      - { pattern: "/api/live-streams/user/{userId}",         methods: [GET], access: PERMIT_ALL }
+      - { pattern: "/api/live-streams/user/{userId}/status",  methods: [GET], access: PERMIT_ALL }
+      - { pattern: /api/live-streams/status,                  methods: [GET], access: PERMIT_ALL }
+      - { pattern: /api/live-streams/statuses,                methods: [GET], access: PERMIT_ALL }
+      - { pattern: /api/live-streams/search,                  methods: [GET], access: PERMIT_ALL }
+      - { pattern: "/api/live-streams/key/{streamKey}",       methods: [GET], access: PERMIT_ALL }
+
+      # ---------------------------
+      # 認証必須（既定）
+      # ---------------------------
       - { pattern: /api/hello/private, methods: [GET], access: AUTHENTICATED }
+
+      # 例：管理者専用
       - { pattern: /api/admin/ping, methods: [GET], access: HAS_ROLE, roles: [ADMIN] }
+      - { pattern: "/api/users/{id}/restore", methods: [PUT], access: HAS_ROLE, roles: [ADMIN] }
+
+      # 既定ルール（クラス直付け bearerAuth を前提）
+      - { pattern: /api/users/**,         access: AUTHENTICATED }
+      - { pattern: /api/videos/**,        access: AUTHENTICATED }
+      - { pattern: /api/live-streams/**,  access: AUTHENTICATED }
 
 spring:
   output:

@@ -1,7 +1,6 @@
 // src/main/java/com/example/security/SecurityRuleApplier.java
 package com.example.security;
 
-import static com.example.security.SecurityRulesProperties.Rule.Access;
 import static org.springframework.util.StringUtils.hasText;
 
 import java.util.List;
