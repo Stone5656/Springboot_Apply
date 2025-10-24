@@ -35,7 +35,7 @@ public class UserService {
      * ユーザー登録処理（未認証OK）。
      */
     @Transactional
-    public User registerUser(UserRegisterRequest request) {
+    public User registerUser(UserRegisterRequestDTO request) {
         if (!StringUtils.hasText(request.getName()))     throw new IllegalArgumentException("名前は必須です");
         if (!StringUtils.hasText(request.getEmail()))    throw new IllegalArgumentException("メールアドレスは必須です");
         if (!StringUtils.hasText(request.getPassword())) throw new IllegalArgumentException("パスワードは必須です");
@@ -53,7 +53,7 @@ public class UserService {
     /**
      * ユーザーログイン処理（未認証OK）。
      */
-    public LoginResponse login(LoginRequest request) {
+    public LoginResponseDTO login(LoginRequestDTO request) {
         User user = userRepository.findByPrimaryEmailEmailIgnoreCase(request.getEmail())
             .orElseThrow(() -> new IllegalArgumentException("メールアドレスまたはパスワードが間違っています"));
 
@@ -62,7 +62,7 @@ public class UserService {
         }
 
         String token = jwtUtils.generateToken(user);
-        return LoginResponse.builder()
+        return LoginResponseDTO.builder()
                 .token(token)
                 .user(UserResponseDTO.fromEntity(user))
                 .build();
