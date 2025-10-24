@@ -27,7 +27,7 @@ class UserControllerSecurityTest {
   @Autowired MockMvc mvc;
 
   /* ========== 共通ヘルパ：許可側は “≠401/403” を検証 ========== */
-  private static void assertNot401Or403(int status) throws Exception {
+  private static void assertNot401Or403(int status) {
     if (status == 401 || status == 403) {
       throw new AssertionError("expected not to be 401/403, but was: " + status);
     }

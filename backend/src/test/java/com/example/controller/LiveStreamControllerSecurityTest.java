@@ -62,7 +62,7 @@ class LiveStreamControllerSecurityTest {
     @ParameterizedTest(name = "GET /api/live-streams/'{'id'}' - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#allRolesInclAnon")
     void get_by_id_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
-      var id = UUID.randomUUID();
+      UUID id = UUID.randomUUID();
       int s = mvc.perform(get("/api/live-streams/{id}", id).with(auth.get()))
                  .andReturn().getResponse().getStatus();
       if (allowed) assertNot401Or403(s);
@@ -71,7 +71,7 @@ class LiveStreamControllerSecurityTest {
     @ParameterizedTest(name = "GET /api/live-streams/user/'{'userId'}' - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#allRolesInclAnon")
     void list_by_user_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
-      var uid = UUID.randomUUID();
+      UUID uid = UUID.randomUUID();
       int s = mvc.perform(get("/api/live-streams/user/{userId}", uid).with(auth.get()))
                  .andReturn().getResponse().getStatus();
       if (allowed) assertNot401Or403(s);
@@ -80,7 +80,7 @@ class LiveStreamControllerSecurityTest {
     @ParameterizedTest(name = "GET /api/live-streams/user/'{'userId'}'/status - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#allRolesInclAnon")
     void list_by_user_status_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
-      var uid = UUID.randomUUID();
+      UUID uid = UUID.randomUUID();
       int s = mvc.perform(get("/api/live-streams/user/{userId}/status", uid).with(auth.get())
                      .param("status", "LIVE"))
                  .andReturn().getResponse().getStatus();
