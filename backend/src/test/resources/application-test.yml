@@ -22,7 +22,7 @@ app:
       - { pattern: /api/users/login,    methods: [POST], access: PERMIT_ALL }
 
       # VideoController（公開系）
-      - { pattern: /api/videos,                     methods: [GET],   access: PERMIT_ALL }   # ← ルート検索のみ
+      - { pattern: /api/videos/search,              methods: [GET],   access: PERMIT_ALL }   # ← ルート検索のみ
       - { pattern: "/api/videos/{id}",              methods: [GET],   access: PERMIT_ALL }
       - { pattern: "/api/videos/user/{userId}",     methods: [GET],   access: PERMIT_ALL }
       - { pattern: /api/videos/popular,             methods: [GET],   access: PERMIT_ALL }
@@ -46,6 +46,7 @@ app:
       # 例：管理者専用
       - { pattern: /api/admin/ping, methods: [GET], access: HAS_ROLE, roles: [ADMIN] }
       - { pattern: "/api/users/{id}/restore", methods: [PUT], access: HAS_ROLE, roles: [ADMIN] }
+      - { pattern: "/api/videos/{id}/restore", methods: [POST], access: HAS_ROLE, roles: [ADMIN] }
 
       # 既定ルール（クラス直付け bearerAuth を前提）
       - { pattern: /api/users/**,         access: AUTHENTICATED }

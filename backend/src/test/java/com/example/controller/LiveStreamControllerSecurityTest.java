@@ -59,7 +59,7 @@ class LiveStreamControllerSecurityTest {
   @Nested
   class PublicApis {
 
-    @ParameterizedTest(name = "GET /api/live-streams/{id} - {0}")
+    @ParameterizedTest(name = "GET /api/live-streams/'{'id'}' - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#allRolesInclAnon")
     void get_by_id_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
       var id = UUID.randomUUID();
@@ -68,7 +68,7 @@ class LiveStreamControllerSecurityTest {
       if (allowed) assertNot401Or403(s);
     }
 
-    @ParameterizedTest(name = "GET /api/live-streams/user/{userId} - {0}")
+    @ParameterizedTest(name = "GET /api/live-streams/user/'{'userId'}' - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#allRolesInclAnon")
     void list_by_user_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
       var uid = UUID.randomUUID();
@@ -77,7 +77,7 @@ class LiveStreamControllerSecurityTest {
       if (allowed) assertNot401Or403(s);
     }
 
-    @ParameterizedTest(name = "GET /api/live-streams/user/{userId}/status - {0}")
+    @ParameterizedTest(name = "GET /api/live-streams/user/'{'userId'}'/status - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#allRolesInclAnon")
     void list_by_user_status_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
       var uid = UUID.randomUUID();
@@ -116,7 +116,7 @@ class LiveStreamControllerSecurityTest {
       if (allowed) assertNot401Or403(s);
     }
 
-    @ParameterizedTest(name = "GET /api/live-streams/key/{streamKey} - {0}")
+    @ParameterizedTest(name = "GET /api/live-streams/key/'{'streamKey'}' - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#allRolesInclAnon")
     void by_stream_key_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
       int s = mvc.perform(get("/api/live-streams/key/{streamKey}", "abc123").with(auth.get()))
@@ -144,7 +144,7 @@ class LiveStreamControllerSecurityTest {
          .andExpect(status().isUnauthorized());
     }
 
-    @ParameterizedTest(name = "PUT /api/live-streams/{id} - {0}")
+    @ParameterizedTest(name = "PUT /api/live-streams/'{'id'}' - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#authedCases")
     void update_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
       var id = UUID.randomUUID();
@@ -163,7 +163,7 @@ class LiveStreamControllerSecurityTest {
          .andExpect(status().isUnauthorized());
     }
 
-    @ParameterizedTest(name = "PUT /api/live-streams/{id}/reschedule - {0}")
+    @ParameterizedTest(name = "PUT /api/live-streams/'{'id'}'/reschedule - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#authedCases")
     void reschedule_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
       var id = UUID.randomUUID();
@@ -182,7 +182,7 @@ class LiveStreamControllerSecurityTest {
          .andExpect(status().isUnauthorized());
     }
 
-    @ParameterizedTest(name = "POST /api/live-streams/{id}/open - {0}")
+    @ParameterizedTest(name = "POST /api/live-streams/'{'id'}'/open - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#authedCases")
     void open_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
       var id = UUID.randomUUID();
@@ -197,7 +197,7 @@ class LiveStreamControllerSecurityTest {
          .andExpect(status().isUnauthorized());
     }
 
-    @ParameterizedTest(name = "POST /api/live-streams/{id}/close - {0}")
+    @ParameterizedTest(name = "POST /api/live-streams/'{'id'}'/close - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#authedCases")
     void close_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
       var id = UUID.randomUUID();
@@ -212,7 +212,7 @@ class LiveStreamControllerSecurityTest {
          .andExpect(status().isUnauthorized());
     }
 
-    @ParameterizedTest(name = "POST /api/live-streams/{id}/cancel - {0}")
+    @ParameterizedTest(name = "POST /api/live-streams/'{'id'}'/cancel - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#authedCases")
     void cancel_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
       var id = UUID.randomUUID();
@@ -227,7 +227,7 @@ class LiveStreamControllerSecurityTest {
          .andExpect(status().isUnauthorized());
     }
 
-    @ParameterizedTest(name = "DELETE /api/live-streams/{id} - {0}")
+    @ParameterizedTest(name = "DELETE /api/live-streams/'{'id'}' - {0}")
     @MethodSource("com.example.controller.LiveStreamControllerSecurityTest#authedCases")
     void delete_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
       var id = UUID.randomUUID();

@@ -120,20 +120,20 @@ public class Video extends AbstractSoftDeletableEntity {
      * @param description 説明文（null可）
      * @param videoPath 動画ファイルの保存パス（null・空不可）
      * @param thumbnailPath サムネイル画像のパス（null可）
-     * @param user 投稿ユーザー（null不可）
+     * @param userRef 投稿ユーザー（null不可）
      * @throws IllegalArgumentException パラメータが不正な場合
      */
     public Video(String title, String description, String videoPath, String thumbnailPath,
-            User user) {
+            User userRef) {
         Assert.hasText(title, "タイトルは必須です");
         Assert.hasText(videoPath, "動画パスは必須です");
-        Assert.notNull(user, "ユーザーは必須です");
+        Assert.notNull(userRef, "ユーザーは必須です");
 
         this.title = title;
         this.description = description;
         this.videoPath = videoPath;
         this.thumbnailPath = thumbnailPath;
-        this.user = user;
+        this.user = userRef;
         this.status = VideoStatus.UPLOADED;
         this.visibility = VideoVisibility.PRIVATE;
         this.viewsCount = 0L;

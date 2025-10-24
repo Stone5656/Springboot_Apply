@@ -5,7 +5,6 @@ import com.example.entity.User;
 import com.example.enums.UserRole;
 import com.example.repository.UserRepository;
 import com.example.security.JwtUtils;
-import com.example.util.CurrentUserUtil;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,9 @@ import org.springframework.util.StringUtils;
 /**
  * ユーザー関連のビジネスロジックを管理するサービスクラス。
  */
-@Service @RequiredArgsConstructor @Transactional(readOnly = true)
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
     private static final String USER_NOT_FOUND = "ユーザーが見つかりません";
@@ -25,29 +26,19 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
-    private final CurrentUserUtil currentUserUtil;
 
-    // ============================================
-    // =============== 登録 / 認証 ================
-    // ============================================
+    // =========================================================
+    // =============== Ⅰ. 未認証OK（Public） ==================
+    // =========================================================
 
     /**
-     * ユーザー登録処理。
-     *
-     * @param request
-     *            登録リクエストDTO
-     * @return 登録されたUserエンティティ
-     * @throws IllegalArgumentException
-     *             入力が不正な場合
+     * ユーザー登録処理（未認証OK）。
      */
     @Transactional
     public User registerUser(UserRegisterRequest request) {
-        if (!StringUtils.hasText(request.getName()))
-            throw new IllegalArgumentException("名前は必須です");
-        if (!StringUtils.hasText(request.getEmail()))
-            throw new IllegalArgumentException("メールアドレスは必須です");
-        if (!StringUtils.hasText(request.getPassword()))
-            throw new IllegalArgumentException("パスワードは必須です");
+        if (!StringUtils.hasText(request.getName()))     throw new IllegalArgumentException("名前は必須です");
+        if (!StringUtils.hasText(request.getEmail()))    throw new IllegalArgumentException("メールアドレスは必須です");
+        if (!StringUtils.hasText(request.getPassword())) throw new IllegalArgumentException("パスワードは必須です");
 
         if (userRepository.findByPrimaryEmailEmailIgnoreCase(request.getEmail()).isPresent()) {
             throw new IllegalArgumentException("このメールアドレスは既に登録されています");
@@ -60,217 +51,158 @@ public class UserService {
     }
 
     /**
-     * ユーザーログイン処理。
-     *
-     * @param request
-     *            ログインリクエスト
-     * @return JWTトークンとユーザー情報
-     * @throws IllegalArgumentException
-     *             認証失敗時
+     * ユーザーログイン処理（未認証OK）。
      */
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByPrimaryEmailEmailIgnoreCase(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("メールアドレスまたはパスワードが間違っています"));
+            .orElseThrow(() -> new IllegalArgumentException("メールアドレスまたはパスワードが間違っています"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("メールアドレスまたはパスワードが間違っています");
         }
 
         String token = jwtUtils.generateToken(user);
-        return LoginResponse.builder().token(token).user(UserResponseDTO.fromEntity(user)).build();
+        return LoginResponse.builder()
+                .token(token)
+                .user(UserResponseDTO.fromEntity(user))
+                .build();
     }
 
-    // ============================================
-    // ============== プロフィール関連 ============
-    // ============================================
+    // =========================================================
+    // ============== Ⅱ. 認証必須（Authenticated） =============
+    // =========================================================
 
     /**
-     * 現在ログイン中のユーザーのプロフィールを更新。
-     *
-     * @param request
-     *            更新内容DTO
-     * @return 更新後のユーザー
+     * プロフィール更新（本人）。
      */
     @Transactional
-    public User updateCurrentUserProfile(UserUpdateRequestDTO request) {
-        User user = currentUserUtil.getCurrentUser();
-        user.updateProfile(request.getName(), request.getProfileImagePath(), request.getCoverImagePath(),
-                request.getBio());
+    public User updateUserProfile(UUID userId, UserUpdateRequestDTO request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
+        user.updateProfile(request.getName(), request.getProfileImagePath(),
+                           request.getCoverImagePath(), request.getBio());
         return userRepository.save(user);
     }
 
-    // ============================================
-    // =============== 認証ユーザー変更 ============
-    // ============================================
-
     /**
-     * パスワード変更処理。
-     *
-     * @param request
-     *            パスワード変更リクエスト
-     * @throws IllegalArgumentException
-     *             不正なパスワード
+     * パスワード変更（本人）。
      */
     @Transactional
-    public void changePassword(PasswordChangeRequestDTO request) {
-        User user = currentUserUtil.getCurrentUser();
+    public void changePassword(UUID userId, PasswordChangeRequestDTO request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
         user.changePassword(request.getOldPassword(), request.getNewPassword(), passwordEncoder);
         userRepository.save(user);
     }
 
     /**
-     * メールアドレスの変更。
-     *
-     * @param request
-     *            メールアドレス変更リクエスト
-     * @throws IllegalArgumentException
-     *             無効なメールアドレス
+     * メールアドレス変更（本人）。
      */
     @Transactional
-    public void changeEmail(EmailChangeRequestDTO request) {
-        User user = currentUserUtil.getCurrentUser();
+    public void changeEmail(UUID userId, EmailChangeRequestDTO request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
         user.changeEmail(request.getNewEmail());
         userRepository.save(user);
     }
 
     /**
-     * 電話番号の更新。
-     *
-     * @param request
-     *            電話番号変更リクエスト
-     * @throws IllegalArgumentException
-     *             ユーザーが存在しない場合
+     * 電話番号更新（本人）。
      */
     @Transactional
-    public void updatePhoneNumber(PhoneNumberUpdateRequestDTO request) {
-        User user = currentUserUtil.getCurrentUser();
+    public void updatePhoneNumber(UUID userId, PhoneNumberUpdateRequestDTO request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
         user.updatePhoneNumber(request.getPhoneNumber());
         userRepository.save(user);
     }
 
     /**
-     * 言語・タイムゾーン・誕生日の更新。
-     *
-     * @param request
-     *            設定更新リクエスト
+     * 言語・タイムゾーン・誕生日の更新（本人）。
      */
     @Transactional
-    public void updatePreferences(PreferenceUpdateRequestDTO request) {
-        User user = currentUserUtil.getCurrentUser();
+    public void updatePreferences(UUID userId, PreferenceUpdateRequestDTO request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
         user.updatePreferences(request.getTimezone(), request.getLanguage(), request.getBirthday());
         userRepository.save(user);
     }
 
-    // ============================================
-    // =============== ユーザー状態管理 ============
-    // ============================================
-
     /**
-     * ユーザーの論理削除。
+     * 論理削除（本人）。
      */
     @Transactional
-    public void deleteCurrentUser() {
-        User user = currentUserUtil.getCurrentUser();
+    public void deleteUser(UUID userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
         user.softDelete();
         userRepository.save(user);
     }
 
     /**
-     * ユーザーの復元。
-     *
-     * @param id
-     *            対象ユーザーID
-     * @throws IllegalStateException
-     *             未削除の場合
+     * リメンバートークン発行（本人）。
      */
     @Transactional
-    public void restoreUser(UUID id) {
-        User user = userRepository.findByIdIncludingDeleted(id)
-                .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
-        user.restore();
-        userRepository.save(user);
-    }
-
-    // ============================================
-    // =============== トークン関連 ================
-    // ============================================
-
-    /**
-     * リメンバートークンの発行。
-     *
-     * @param duration
-     *            トークン有効期間
-     * @return トークン文字列
-     */
-    @Transactional
-    public String issueRememberToken(Duration duration) {
-        User user = currentUserUtil.getCurrentUser();
+    public String issueRememberToken(UUID userId, Duration duration) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
         user.issueRememberToken(duration);
         userRepository.save(user);
         return user.getRememberToken();
     }
 
     /**
-     * リメンバートークンの検証。
-     *
-     * @param token
-     *            トークン
-     * @return 有効かどうか
+     * リメンバートークン検証（本人）。
      */
-    public boolean verifyRememberToken(String token) {
-        User user = currentUserUtil.getCurrentUser();
+    public boolean verifyRememberToken(UUID userId, String token) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
         return user.verifyRememberToken(token);
     }
 
-    // ============================================
-    // =============== ログイン記録 ================
-    // ============================================
-
     /**
-     * ログイン成功記録。
+     * ログイン成功記録（本人）。
      */
     @Transactional
-    public void markLoginSuccess() {
-        User user = currentUserUtil.getCurrentUser();
+    public void markLoginSuccess(UUID userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
         user.markLoginSuccess();
         userRepository.save(user);
     }
 
     /**
-     * ログイン失敗記録。
+     * ログイン失敗記録（本人）。
      */
     @Transactional
-    public void markLoginFailure() {
-        User user = currentUserUtil.getCurrentUser();
+    public void markLoginFailure(UUID userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
         user.markLoginFailure();
         userRepository.save(user);
     }
 
-    // ============================================
-    // ================ 補助関数 ==================
-    // ============================================
+    // =========================================================
+    // ============== Ⅲ. 管理者必須（Admin-only） ===============
+    // =========================================================
 
     /**
-     * UUIDからユーザーを取得。
-     *
-     * @param id
-     *            ユーザーID
-     * @return ユーザーエンティティ
-     * @throws IllegalArgumentException
-     *             ユーザーが存在しない場合
+     * UUIDからユーザーを取得（管理用）。
      */
-    public User getUserById(UUID id) {
-        return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
+    @Transactional(readOnly = true)
+    public User getUserById(UUID userId) {
+        return userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
     }
 
     /**
-     * 現在ログイン中のユーザーを取得。
-     *
-     * @return ユーザーエンティティ
-     * @throws IllegalStateException
-     *             認証情報が取得できない、またはユーザーが存在しない場合
+     * ユーザーの復元（管理用）。
      */
-    public User getCurrentUser() {
-        return currentUserUtil.getCurrentUser();
+    @Transactional
+    public void restoreUser(UUID userId) {
+        User user = userRepository.findByIdIncludingDeleted(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
+        user.restore();
+        userRepository.save(user);
     }
 }

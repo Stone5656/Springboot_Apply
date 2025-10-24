@@ -5,7 +5,7 @@ import com.example.dto.videos.SearchRequestDTO;
 import com.example.dto.videos.VideoCreateRequestDTO;
 import com.example.dto.videos.VideoResponseDTO;
 import com.example.dto.videos.VideoUpdateRequestDTO;
-import com.example.entity.User;
+import com.example.security.UserPrincipal;
 import com.example.service.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -95,38 +96,42 @@ public class VideoController {
     @Operation(summary = "自分の動画一覧を取得", description = "マイアーカイブ一覧API（要ログイン）")
     @GetMapping("/my")
     public ResponseEntity<Page<VideoResponseDTO>> getMyVideos(
-            @Parameter(hidden = true) @AuthenticationPrincipal User user,
+            @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal principal,
             @Parameter(description = "ページング情報") Pageable pageable) {
-        return ResponseEntity.ok(videoService.getMyVideos(pageable));
+        return ResponseEntity.ok(videoService.getMyVideos(principal.getId(), pageable));
     }
 
     @Operation(summary = "動画をアップロード", description = "Create 用（要ログイン）")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/upload")
     public ResponseEntity<VideoResponseDTO> createVideo(
             @Parameter(description = "新規動画のリクエストDTO") @RequestBody VideoCreateRequestDTO request,
-            @Parameter(hidden = true) @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(videoService.createVideo(request));
+            @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(videoService.createVideo(principal.getId(), request));
     }
 
     @Operation(summary = "idで特定の動画を更新", description = "Update 用（要ログイン）")
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}")
     public ResponseEntity<VideoResponseDTO> updateVideo(
             @Parameter(description = "動画ID") @PathVariable UUID id,
             @Parameter(description = "動画更新のリクエストDTO") @RequestBody VideoUpdateRequestDTO request,
-            @Parameter(hidden = true) @AuthenticationPrincipal User user) {
+            @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(videoService.updateVideo(id, request));
     }
 
     @Operation(summary = "idで特定の動画を削除", description = "Delete 用（要ログイン）")
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVideo(
             @Parameter(description = "動画ID") @PathVariable UUID id,
-            @Parameter(hidden = true) @AuthenticationPrincipal User user) {
+            @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal principal) {
         videoService.deleteVideo(id);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "動画を公開状態にする", description = "公開日時を指定し公開（要ログイン）")
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/{id}/publish")
     public ResponseEntity<Void> publishVideo(
             @PathVariable UUID id,
@@ -138,6 +143,7 @@ public class VideoController {
     }
 
     @Operation(summary = "動画を非公開にする", description = "公開済みを非公開へ戻す（要ログイン）")
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/{id}/unpublish")
     public ResponseEntity<Void> unpublishVideo(@PathVariable UUID id) {
         videoService.unpublishVideo(id);
@@ -149,6 +155,7 @@ public class VideoController {
     // ------------------------------------------------
 
     @Operation(summary = "削除済み動画の復元", description = "論理削除からの復元（管理者想定）")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/restore")
     public ResponseEntity<VideoResponseDTO> restoreVideo(@PathVariable UUID id) {
         return ResponseEntity.ok(videoService.restoreVideo(id));

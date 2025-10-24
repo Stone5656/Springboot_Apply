@@ -1,8 +1,8 @@
 package com.example.controller;
 
 import com.example.dto.live_streams.*;
-import com.example.entity.User;
 import com.example.enums.StreamStatus;
+import com.example.security.UserPrincipal;
 import com.example.service.LiveStreamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +16,8 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "LiveStreams", description = "ライブ配信に関するAPI群")
@@ -102,15 +104,17 @@ public class LiveStreamController {
 
     @Operation(summary = "ライブ配信作成",
                description = "新規ライブ配信を作成。ストリームキーは自動生成（要ログイン）")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public ResponseEntity<LiveStreamResponseDTO> createLiveStream(
             @Valid @RequestBody LiveStreamCreateRequestDTO request,
-            @Parameter(hidden = true, description = "現在認証されているユーザー")
-            @RequestAttribute("currentUser") User currentUser) {
-        return ResponseEntity.ok(liveStreamService.createLiveStream(request));
+            @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal principal
+        ) {
+        return ResponseEntity.ok(liveStreamService.createLiveStream(principal.getId(), request));
     }
 
     @Operation(summary = "ライブ配信情報更新", description = "タイトル・説明・サムネイル等を更新（要ログイン）")
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}")
     public ResponseEntity<LiveStreamResponseDTO> updateLiveStream(
             @Parameter(description = "ライブ配信ID") @PathVariable UUID id,
@@ -120,6 +124,7 @@ public class LiveStreamController {
 
     @Operation(summary = "ライブ配信スケジュール更新",
                description = "予定日時やステータスを更新（延期/変更に使用・要ログイン）")
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}/reschedule")
     public ResponseEntity<LiveStreamResponseDTO> rescheduleLiveStream(
             @Parameter(description = "ライブ配信ID") @PathVariable UUID id,
@@ -128,6 +133,7 @@ public class LiveStreamController {
     }
 
     @Operation(summary = "ライブ開始", description = "配信IDのステータスを LIVE に変更（要ログイン）")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/open")
     public ResponseEntity<LiveStreamResponseDTO> openLiveStream(
             @Parameter(description = "ライブ配信ID") @PathVariable UUID id) {
@@ -135,6 +141,7 @@ public class LiveStreamController {
     }
 
     @Operation(summary = "ライブ終了", description = "ステータスを 終了 に変更（要ログイン）")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/close")
     public ResponseEntity<LiveStreamResponseDTO> closeLiveStream(
             @Parameter(description = "ライブ配信ID") @PathVariable UUID id) {
@@ -142,6 +149,7 @@ public class LiveStreamController {
     }
 
     @Operation(summary = "ライブキャンセル", description = "ステータスを キャンセル に変更（要ログイン）")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/cancel")
     public ResponseEntity<LiveStreamResponseDTO> cancelLiveStream(
             @Parameter(description = "ライブ配信ID") @PathVariable UUID id) {
@@ -149,6 +157,7 @@ public class LiveStreamController {
     }
 
     @Operation(summary = "ライブ配信削除", description = "指定配信の削除（要ログイン）")
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLiveStream(
             @Parameter(description = "ライブ配信ID") @PathVariable UUID id) {

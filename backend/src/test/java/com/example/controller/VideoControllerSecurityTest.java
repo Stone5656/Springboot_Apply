@@ -3,6 +3,7 @@ package com.example.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import com.example.testbase.AuthPostProcessors;
 import java.util.UUID;
@@ -42,16 +43,13 @@ class VideoControllerSecurityTest {
 
   // ---- roles ----
   static Stream<Arguments> authedCases() {
-    return Stream.of(
-        Arguments.of("ADMIN", AuthPostProcessors.admin()),
+    return Stream.of(Arguments.of("ADMIN", AuthPostProcessors.admin()),
         Arguments.of("MODERATOR", AuthPostProcessors.moderator()),
-        Arguments.of("USER", AuthPostProcessors.user())
-    );
+        Arguments.of("USER", AuthPostProcessors.user()));
   }
 
   static Stream<Arguments> allRolesInclAnon() {
-    return Stream.of(
-        Arguments.of("ADMIN", AuthPostProcessors.admin(), true),
+    return Stream.of(Arguments.of("ADMIN", AuthPostProcessors.admin(), true),
         Arguments.of("MODERATOR", AuthPostProcessors.moderator(), true),
         Arguments.of("USER", AuthPostProcessors.user(), true),
         Arguments.of("ANON", AuthPostProcessors.anon(), true) // 公開は true
@@ -61,55 +59,71 @@ class VideoControllerSecurityTest {
   @Nested
   class PublicApis {
 
-    @ParameterizedTest(name = "GET /api/videos/{id} - {0}")
+    @ParameterizedTest(name = "GET /api/videos/'{'id'}' - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#allRolesInclAnon")
-    void get_by_id_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
+    void get_by_id_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed)
+        throws Exception {
       var id = UUID.randomUUID();
-      int s = mvc.perform(get("/api/videos/{id}", id).with(auth.get()))
-                 .andReturn().getResponse().getStatus();
-      if (allowed) assertNot401Or403(s); else org.junit.jupiter.api.Assertions.fail();
+      int s = mvc.perform(get("/api/videos/{id}", id).with(auth.get())).andReturn().getResponse()
+          .getStatus();
+      if (allowed)
+        assertNot401Or403(s);
+      else
+        org.junit.jupiter.api.Assertions.fail();
     }
 
-    @ParameterizedTest(name = "GET /api/videos (search) - {0}")
+    @ParameterizedTest(name = "GET /api/videos/search - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#allRolesInclAnon")
-    void search_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
-      int s = mvc.perform(get("/api/videos").with(auth.get()))
-                 .andReturn().getResponse().getStatus();
-      if (allowed) assertNot401Or403(s);
+    void search_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed)
+        throws Exception {
+      int s = mvc.perform(get("/api/videos/search").with(auth.get())).andReturn().getResponse()
+          .getStatus();
+      if (allowed)
+        assertNot401Or403(s);
+      else
+        org.assertj.core.api.Assertions.assertThat(s).isIn(401, 403);
     }
 
-    @ParameterizedTest(name = "GET /api/videos/user/{userId} - {0}")
+    @ParameterizedTest(name = "GET /api/videos/user/'{'userId'}' - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#allRolesInclAnon")
-    void public_by_user(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
+    void public_by_user(String who, Supplier<RequestPostProcessor> auth, boolean allowed)
+        throws Exception {
       var uid = UUID.randomUUID();
-      int s = mvc.perform(get("/api/videos/user/{userId}", uid).with(auth.get()))
-                 .andReturn().getResponse().getStatus();
-      if (allowed) assertNot401Or403(s);
+      int s = mvc.perform(get("/api/videos/user/{userId}", uid).with(auth.get())).andReturn()
+          .getResponse().getStatus();
+      if (allowed)
+        assertNot401Or403(s);
     }
 
     @ParameterizedTest(name = "GET /api/videos/popular - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#allRolesInclAnon")
-    void popular_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
-      int s = mvc.perform(get("/api/videos/popular").with(auth.get()))
-                 .andReturn().getResponse().getStatus();
-      if (allowed) assertNot401Or403(s);
+    void popular_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed)
+        throws Exception {
+      int s = mvc.perform(get("/api/videos/popular").with(auth.get())).andReturn().getResponse()
+          .getStatus();
+      if (allowed)
+        assertNot401Or403(s);
     }
 
     @ParameterizedTest(name = "GET /api/videos/recent - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#allRolesInclAnon")
-    void recent_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
-      int s = mvc.perform(get("/api/videos/recent").with(auth.get()))
-                 .andReturn().getResponse().getStatus();
-      if (allowed) assertNot401Or403(s);
+    void recent_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed)
+        throws Exception {
+      int s = mvc.perform(get("/api/videos/recent").with(auth.get())).andReturn().getResponse()
+          .getStatus();
+      if (allowed)
+        assertNot401Or403(s);
     }
 
-    @ParameterizedTest(name = "PATCH /api/videos/{id}/views - {0}")
+    @ParameterizedTest(name = "PATCH /api/videos/'{'id'}'/views - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#allRolesInclAnon")
-    void views_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed) throws Exception {
+    void views_public(String who, Supplier<RequestPostProcessor> auth, boolean allowed)
+        throws Exception {
       var id = UUID.randomUUID();
-      int s = mvc.perform(patch("/api/videos/{id}/views", id).with(auth.get()))
-                 .andReturn().getResponse().getStatus();
-      if (allowed) assertNot401Or403(s);
+      int s = mvc.perform(patch("/api/videos/{id}/views", id).with(auth.get())).andReturn()
+          .getResponse().getStatus();
+      if (allowed)
+        assertNot401Or403(s);
     }
   }
 
@@ -119,115 +133,113 @@ class VideoControllerSecurityTest {
     @ParameterizedTest(name = "GET /api/videos/my - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#authedCases")
     void my_list_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
-      int s = mvc.perform(get("/api/videos/my").with(auth.get()))
-                 .andReturn().getResponse().getStatus();
+      int s =
+          mvc.perform(get("/api/videos/my").with(auth.get())).andReturn().getResponse().getStatus();
       assertNot401Or403(s);
     }
 
     @Test
     void my_list_unauth_401() throws Exception {
-      mvc.perform(get("/api/videos/my"))
-         .andExpect(status().isUnauthorized());
+      mvc.perform(get("/api/videos/my")).andExpect(status().isUnauthorized());
     }
 
     @ParameterizedTest(name = "POST /api/videos - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#authedCases")
     void create_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
-      int s = mvc.perform(post("/api/videos").with(auth.get())
-                     .contentType(MediaType.APPLICATION_JSON)
-                     .content("{}"))
-                 .andReturn().getResponse().getStatus();
+      int s =
+          mvc.perform(post("/api/videos").with(auth.get()).contentType(MediaType.APPLICATION_JSON)
+              .content("{}")).andReturn().getResponse().getStatus();
       assertNot401Or403(s);
     }
 
     @Test
     void create_unauth_401() throws Exception {
       mvc.perform(post("/api/videos").contentType(MediaType.APPLICATION_JSON).content("{}"))
-         .andExpect(status().isUnauthorized());
+          .andExpect(status().isUnauthorized());
     }
 
-    @ParameterizedTest(name = "PUT /api/videos/{id} - {0}")
+    @ParameterizedTest(name = "PUT /api/videos/'{'id'}' - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#authedCases")
     void update_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
       var id = UUID.randomUUID();
-      int s = mvc.perform(put("/api/videos/{id}", id).with(auth.get())
-                     .contentType(MediaType.APPLICATION_JSON)
-                     .content("{}"))
-                 .andReturn().getResponse().getStatus();
+      int s = mvc
+          .perform(put("/api/videos/{id}", id).with(auth.get())
+              .contentType(MediaType.APPLICATION_JSON).content("{}"))
+          .andReturn().getResponse().getStatus();
       assertNot401Or403(s);
     }
 
     @Test
     void update_unauth_401() throws Exception {
-      mvc.perform(put("/api/videos/{id}", UUID.randomUUID())
-              .contentType(MediaType.APPLICATION_JSON)
-              .content("{}"))
-         .andExpect(status().isUnauthorized());
+      mvc.perform(put("/api/videos/{id}", UUID.randomUUID()).contentType(MediaType.APPLICATION_JSON)
+          .content("{}")).andExpect(status().isUnauthorized());
     }
 
-    @ParameterizedTest(name = "DELETE /api/videos/{id} - {0}")
+    @ParameterizedTest(name = "DELETE /api/videos/'{'id'}' - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#authedCases")
     void delete_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
       var id = UUID.randomUUID();
-      int s = mvc.perform(delete("/api/videos/{id}", id).with(auth.get()))
-                 .andReturn().getResponse().getStatus();
+      int s = mvc.perform(delete("/api/videos/{id}", id).with(auth.get())).andReturn().getResponse()
+          .getStatus();
       assertNot401Or403(s);
     }
 
     @Test
     void delete_unauth_401() throws Exception {
       mvc.perform(delete("/api/videos/{id}", UUID.randomUUID()))
-         .andExpect(status().isUnauthorized());
+          .andExpect(status().isUnauthorized());
     }
 
-    @ParameterizedTest(name = "PATCH /api/videos/{id}/publish - {0}")
+    @ParameterizedTest(name = "PATCH /api/videos/'{'id'}'/publish - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#authedCases")
     void publish_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
       var id = UUID.randomUUID();
-      int s = mvc.perform(patch("/api/videos/{id}/publish", id).with(auth.get()))
-                 .andReturn().getResponse().getStatus();
+      int s = mvc.perform(patch("/api/videos/{id}/publish", id).with(auth.get())).andReturn()
+          .getResponse().getStatus();
       assertNot401Or403(s);
     }
 
     @Test
     void publish_unauth_401() throws Exception {
       mvc.perform(patch("/api/videos/{id}/publish", UUID.randomUUID()))
-         .andExpect(status().isUnauthorized());
+          .andExpect(status().isUnauthorized());
     }
 
-    @ParameterizedTest(name = "PATCH /api/videos/{id}/unpublish - {0}")
+    @ParameterizedTest(name = "PATCH /api/videos/'{'id'}'/unpublish - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#authedCases")
     void unpublish_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
       var id = UUID.randomUUID();
-      int s = mvc.perform(patch("/api/videos/{id}/unpublish", id).with(auth.get()))
-                 .andReturn().getResponse().getStatus();
+      int s = mvc.perform(patch("/api/videos/{id}/unpublish", id).with(auth.get())).andReturn()
+          .getResponse().getStatus();
       assertNot401Or403(s);
     }
 
     @Test
     void unpublish_unauth_401() throws Exception {
       mvc.perform(patch("/api/videos/{id}/unpublish", UUID.randomUUID()))
-         .andExpect(status().isUnauthorized());
+          .andExpect(status().isUnauthorized());
     }
   }
 
   @Nested
   class AdminApis {
 
-    @ParameterizedTest(name = "POST /api/videos/{id}/restore - ADMIN only ({0})")
+    @ParameterizedTest(name = "POST /api/videos/'{'id'}'/restore - {0}")
     @MethodSource("com.example.controller.VideoControllerSecurityTest#authedCases")
     void restore_role_matrix(String who, Supplier<RequestPostProcessor> auth) throws Exception {
       var id = UUID.randomUUID();
-      int s = mvc.perform(post("/api/videos/{id}/restore", id).with(auth.get()))
-                 .andReturn().getResponse().getStatus();
-      if ("ADMIN".equals(who)) assertNot401Or403(s);
-      else org.junit.jupiter.api.Assertions.assertEquals(403, s);
+      int s = mvc.perform(post("/api/videos/{id}/restore", id).with(auth.get())).andDo(print())
+          .andReturn().getResponse().getStatus();
+      if ("ADMIN".equals(who))
+        assertNot401Or403(s);
+      else
+        org.junit.jupiter.api.Assertions.assertEquals(403, s);
     }
 
     @Test
     void restore_unauth_401() throws Exception {
       mvc.perform(post("/api/videos/{id}/restore", UUID.randomUUID()))
-         .andExpect(status().isUnauthorized());
+          .andExpect(status().isUnauthorized());
     }
   }
 }
