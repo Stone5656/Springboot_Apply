@@ -32,7 +32,7 @@ public class UserController {
     /** ユーザー登録 */
     @Operation(summary = "ユーザー登録", description = "新しいユーザーを登録します")
     @PostMapping("/register") // ※ 公開API（YAMLで PERMIT_ALL を付与）
-    public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRegisterRequest request) {
+    public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRegisterRequestDTO request) {
         User created = userService.registerUser(request);
         return ResponseEntity.ok(UserResponseDTO.fromEntity(created));
     }
@@ -40,8 +40,8 @@ public class UserController {
     /** ログイン */
     @Operation(summary = "ユーザーログイン", description = "メールアドレスとパスワードでログインし、JWTトークンを返します")
     @PostMapping("/login") // ※ 公開API（YAMLで PERMIT_ALL を付与）
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse response = userService.login(request);
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
+        LoginResponseDTO response = userService.login(request);
         return ResponseEntity.ok(response);
     }
 

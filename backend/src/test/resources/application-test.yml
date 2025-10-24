@@ -5,10 +5,10 @@ logging:
 app:
   security:
     rules:
-      # ---------------------------
-      # 先に「要認証」で縛る（衝突回避）
-      # ---------------------------
-      - { pattern: /api/videos/my, methods: [GET], access: AUTHENTICATED }
+      # Swagger-UI / API Docs（すべて公開）
+      - { pattern: /swagger-ui.html, access: PERMIT_ALL }
+      - { pattern: /swagger-ui/**,   access: PERMIT_ALL }
+      - { pattern: /v3/api-docs/**,  access: PERMIT_ALL }
 
       # ---------------------------
       # 公開API（匿名許可の“例外”）—個別列挙
@@ -38,15 +38,29 @@ app:
       - { pattern: /api/live-streams/search,                  methods: [GET], access: PERMIT_ALL }
       - { pattern: "/api/live-streams/key/{streamKey}",       methods: [GET], access: PERMIT_ALL }
 
+      # CategoryController（一覧・検索・取得は公開）
+      - { pattern: /api/categories,           methods: [GET], access: PERMIT_ALL }
+      - { pattern: "/api/categories/{id}",    methods: [GET], access: PERMIT_ALL }
+
       # ---------------------------
       # 認証必須（既定）
       # ---------------------------
       - { pattern: /api/hello/private, methods: [GET], access: AUTHENTICATED }
 
+      # Video × Category 関連操作
+      - { pattern: "/api/videos/{videoId}/categories",          methods: [POST, PUT], access: AUTHENTICATED }
+      - { pattern: "/api/videos/{videoId}/categories/{categoryId}", methods: [DELETE], access: AUTHENTICATED }
+
+      # LiveStream × Category 関連操作
+      - { pattern: "/api/livestreams/{liveStreamId}/categories",          methods: [POST, PUT], access: AUTHENTICATED }
+      - { pattern: "/api/livestreams/{liveStreamId}/categories/{categoryId}", methods: [DELETE], access: AUTHENTICATED }
+
       # 例：管理者専用
       - { pattern: /api/admin/ping, methods: [GET], access: HAS_ROLE, roles: [ADMIN] }
       - { pattern: "/api/users/{id}/restore", methods: [PUT], access: HAS_ROLE, roles: [ADMIN] }
-      - { pattern: "/api/videos/{id}/restore", methods: [POST], access: HAS_ROLE, roles: [ADMIN] }
+      - { pattern: "/api/videos/{id}/restore", methods: [PUT], access: HAS_ROLE, roles: [ADMIN] }
+      - { pattern: /api/categories,           methods: [POST], access: HAS_ROLE, roles: [ADMIN] }
+      - { pattern: "/api/categories/{id}",    methods: [PUT, DELETE], access: HAS_ROLE, roles: [ADMIN] }
 
       # 既定ルール（クラス直付け bearerAuth を前提）
       - { pattern: /api/users/**,         access: AUTHENTICATED }
