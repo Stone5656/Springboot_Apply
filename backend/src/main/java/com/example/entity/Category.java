@@ -130,4 +130,12 @@ public class Category extends AbstractSoftDeletableEntity {
         restoreEntities(videoCategories);
         restoreEntities(liveStreamCategories);
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }
