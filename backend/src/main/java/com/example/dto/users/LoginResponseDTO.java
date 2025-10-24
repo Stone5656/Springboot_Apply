@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter @Builder
-public class LoginResponse {
+public class LoginResponseDTO {
     private String token;
     private UserResponseDTO user;
 }

@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter @NoArgsConstructor @AllArgsConstructor
-public class UserRegisterRequest {
+public class UserRegisterRequestDTO {
 
     @NotBlank(message = "名前は必須です")
     @Size(max = 30)
