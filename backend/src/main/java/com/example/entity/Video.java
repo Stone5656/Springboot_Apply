@@ -95,12 +95,9 @@ public class Video extends AbstractSoftDeletableEntity {
     // ============================
 
     /** カテゴリとの関連（論理削除対応） */
-    @OneToMany(
-        mappedBy = "video",
-        cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE },
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "video",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
+            orphanRemoval = true, fetch = FetchType.LAZY)
     @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
     private List<VideoCategory> videoCategories = new ArrayList<>();
 

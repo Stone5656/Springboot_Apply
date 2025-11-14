@@ -6,12 +6,16 @@ import java.util.List;
 import java.util.UUID;
 import org.hibernate.validator.constraints.UniqueElements;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class VideoCategoriesAddRequest {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class LiveStreamCategoryAddRequest {
     @NotNull
-    private UUID videoId;
+    private UUID liveStreamId;
 
     @NotEmpty
-    @UniqueElements // 重複IDの混入を防ぐ（Hibernate Validator拡張）
+    @UniqueElements
     private List<@NotNull UUID> categoryIds;
 }

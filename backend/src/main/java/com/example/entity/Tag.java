@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import com.example.util.entity.AbstractBaseEntity;
 
 /**
@@ -26,6 +27,7 @@ import com.example.util.entity.AbstractBaseEntity;
     }
 )
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Tag extends AbstractBaseEntity {
 

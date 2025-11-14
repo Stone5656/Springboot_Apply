@@ -37,15 +37,15 @@ public class CategoryService {
     // ========================================================
 
     public CategoryResponseDTO getCategory(UUID id) {
-        Category c = categoryRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException(String.format(CATEGORY_NOT_FOUND, id)));
+        Category c = categoryRepository.findById(id).orElseThrow(
+                () -> new NoSuchElementException(String.format(CATEGORY_NOT_FOUND, id)));
         return CategoryResponseDTO.fromEntity(c);
     }
 
-    public Page<CategoryResponseDTO> searchCategories(CategorySearchRequestDTO req, Pageable pageable) {
+    public Page<CategoryResponseDTO> searchCategories(CategorySearchRequestDTO req,
+            Pageable pageable) {
         String keyword = (req != null && req.getKeyword() != null) ? req.getKeyword() : "";
-        Page<Category> page = (keyword.isBlank())
-                ? categoryRepository.findAll(pageable)
+        Page<Category> page = (keyword.isBlank()) ? categoryRepository.findAll(pageable)
                 : categoryRepository.findByNameContainingIgnoreCase(keyword, pageable);
         return page.map(CategoryResponseDTO::fromEntity);
     }
@@ -57,7 +57,8 @@ public class CategoryService {
     // ---- Video × Category ----
     @Transactional
     public void addCategoriesToVideo(UUID videoId, List<UUID> categoryIds) {
-        if (categoryIds == null || categoryIds.isEmpty()) return;
+        if (categoryIds == null || categoryIds.isEmpty())
+            return;
 
         // 1) 入力カテゴリの存在チェック
         Set<UUID> unique = new LinkedHashSet<>(categoryIds);
@@ -65,18 +66,15 @@ public class CategoryService {
 
         // 2) 既存の関連を取得（派生クエリ：video.id で検索）
         Set<UUID> already = videoCategoryRepository.findByVideo_Id(videoId).stream()
-                .map(vc -> vc.getCategory().getId())
-                .collect(Collectors.toSet());
+                .map(vc -> vc.getCategory().getId()).collect(Collectors.toSet());
 
         // 3) 参照プロキシを使って未登録分だけ挿入
         Video videoRef = em.getReference(Video.class, videoId); // SELECTしない参照
-        List<VideoCategory> toSave = unique.stream()
-                .filter(cid -> !already.contains(cid))
-                .map(cid -> {
+        List<VideoCategory> toSave =
+                unique.stream().filter(cid -> !already.contains(cid)).map(cid -> {
                     Category catRef = em.getReference(Category.class, cid);
                     return new VideoCategory(catRef, videoRef); // ★ (Category, Video) コンストラクタ
-                })
-                .toList();
+                }).toList();
 
         if (!toSave.isEmpty()) {
             videoCategoryRepository.saveAll(toSave);
@@ -84,22 +82,22 @@ public class CategoryService {
     }
 
     @Transactional
-    public void replaceVideoCategories(UUID videoId, List<UUID> categoryIds) {
+    public void replaceVideoCategory(UUID videoId, List<UUID> categoryIds) {
         // 全削除 → 再挿入（nullなら全削除のみ）
         videoCategoryRepository.deleteByVideo_Id(videoId);
-        if (categoryIds == null) return;
+        if (categoryIds == null)
+            return;
 
         Set<UUID> unique = new LinkedHashSet<>(categoryIds);
-        if (unique.isEmpty()) return;
+        if (unique.isEmpty())
+            return;
         assertAllCategoriesExist(unique);
 
         Video videoRef = em.getReference(Video.class, videoId); // SELECTしない参照
-        List<VideoCategory> toSave = unique.stream()
-                .map(cid -> {
-                    Category catRef = em.getReference(Category.class, cid);
-                    return new VideoCategory(catRef, videoRef); // ★ (Category, Video) コンストラクタ
-                })
-                .toList();
+        List<VideoCategory> toSave = unique.stream().map(cid -> {
+            Category catRef = em.getReference(Category.class, cid);
+            return new VideoCategory(catRef, videoRef); // ★ (Category, Video) コンストラクタ
+        }).toList();
 
         videoCategoryRepository.saveAll(toSave);
     }
@@ -113,23 +111,22 @@ public class CategoryService {
 
     @Transactional
     public void addCategoriesToLiveStream(UUID liveStreamId, List<UUID> categoryIds) {
-        if (categoryIds == null || categoryIds.isEmpty()) return;
+        if (categoryIds == null || categoryIds.isEmpty())
+            return;
 
         Set<UUID> unique = new LinkedHashSet<>(categoryIds);
         assertAllCategoriesExist(unique);
 
         Set<UUID> already = liveStreamCategoryRepository.findByLiveStream_Id(liveStreamId).stream()
-                .map(lc -> lc.getCategory().getId())
-                .collect(Collectors.toSet());
+                .map(lc -> lc.getCategory().getId()).collect(Collectors.toSet());
 
         LiveStream liveRef = em.getReference(LiveStream.class, liveStreamId); // SELECTしない参照
-        List<LiveStreamCategory> toSave = unique.stream()
-                .filter(cid -> !already.contains(cid))
-                .map(cid -> {
+        List<LiveStreamCategory> toSave =
+                unique.stream().filter(cid -> !already.contains(cid)).map(cid -> {
                     Category catRef = em.getReference(Category.class, cid);
-                    return new LiveStreamCategory(catRef, liveRef); // ★ (Category, LiveStream) コンストラクタ
-                })
-                .toList();
+                    return new LiveStreamCategory(catRef, liveRef); // ★ (Category, LiveStream)
+                                                                    // コンストラクタ
+                }).toList();
 
         if (!toSave.isEmpty()) {
             liveStreamCategoryRepository.saveAll(toSave);
@@ -137,21 +134,21 @@ public class CategoryService {
     }
 
     @Transactional
-    public void replaceLiveStreamCategories(UUID liveStreamId, List<UUID> categoryIds) {
+    public void replaceLiveStreamCategory(UUID liveStreamId, List<UUID> categoryIds) {
         liveStreamCategoryRepository.deleteByLiveStream_Id(liveStreamId);
-        if (categoryIds == null) return;
+        if (categoryIds == null)
+            return;
 
         Set<UUID> unique = new LinkedHashSet<>(categoryIds);
-        if (unique.isEmpty()) return;
+        if (unique.isEmpty())
+            return;
         assertAllCategoriesExist(unique);
 
         LiveStream liveRef = em.getReference(LiveStream.class, liveStreamId); // SELECTしない参照
-        List<LiveStreamCategory> toSave = unique.stream()
-                .map(cid -> {
-                    Category catRef = em.getReference(Category.class, cid);
-                    return new LiveStreamCategory(catRef, liveRef); // ★ (Category, LiveStream) コンストラクタ
-                })
-                .toList();
+        List<LiveStreamCategory> toSave = unique.stream().map(cid -> {
+            Category catRef = em.getReference(Category.class, cid);
+            return new LiveStreamCategory(catRef, liveRef); // ★ (Category, LiveStream) コンストラクタ
+        }).toList();
 
         liveStreamCategoryRepository.saveAll(toSave);
     }
@@ -167,8 +164,9 @@ public class CategoryService {
 
     @Transactional
     public CategoryResponseDTO createCategory(CategoryCreateRequestDTO req) {
-        categoryRepository.findByNameIgnoreCase(req.getName())
-                .ifPresent(x -> { throw new IllegalArgumentException("カテゴリ名は既に存在します"); });
+        categoryRepository.findByNameIgnoreCase(req.getName()).ifPresent(x -> {
+            throw new IllegalArgumentException("カテゴリ名は既に存在します");
+        });
 
         Category c = new Category(req.getName(), req.getDescription(), null);
         return CategoryResponseDTO.fromEntity(categoryRepository.save(c));
@@ -176,13 +174,14 @@ public class CategoryService {
 
     @Transactional
     public CategoryResponseDTO updateCategory(UUID id, CategoryUpdateRequestDTO req) {
-        Category c = categoryRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException(String.format(CATEGORY_NOT_FOUND, id)));
+        Category c = categoryRepository.findById(id).orElseThrow(
+                () -> new NoSuchElementException(String.format(CATEGORY_NOT_FOUND, id)));
 
         if (req.getName() != null) {
             categoryRepository.findByNameIgnoreCase(req.getName())
-                    .filter(existing -> !existing.getId().equals(id))
-                    .ifPresent(x -> { throw new IllegalArgumentException("カテゴリ名は既に存在します"); });
+                    .filter(existing -> !existing.getId().equals(id)).ifPresent(x -> {
+                        throw new IllegalArgumentException("カテゴリ名は既に存在します");
+                    });
             c.setName(req.getName());
         }
         if (req.getDescription() != null) {
@@ -204,7 +203,8 @@ public class CategoryService {
     // ========================================================
 
     private void assertAllCategoriesExist(Collection<UUID> ids) {
-        if (ids == null || ids.isEmpty()) return;
+        if (ids == null || ids.isEmpty())
+            return;
         Set<UUID> set = new LinkedHashSet<>(ids);
         List<Category> found = categoryRepository.findAllById(set);
         if (found.size() != set.size()) {

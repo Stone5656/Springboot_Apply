@@ -6,12 +6,16 @@ import java.util.List;
 import java.util.UUID;
 import org.hibernate.validator.constraints.UniqueElements;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class LiveStreamCategoriesAddRequest {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class LiveStreamCategoryReplaceRequest {
     @NotNull
     private UUID liveStreamId;
 
-    @NotEmpty
+    @NotNull
     @UniqueElements
     private List<@NotNull UUID> categoryIds;
 }
