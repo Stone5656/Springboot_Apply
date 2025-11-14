@@ -42,6 +42,15 @@ app:
       - { pattern: /api/categories,           methods: [GET], access: PERMIT_ALL }
       - { pattern: "/api/categories/{id}",    methods: [GET], access: PERMIT_ALL }
 
+      # -----------------------------------------------------
+      # ChatMessageController（公開：検索・取得）
+      # -----------------------------------------------------
+      - { pattern: "/api/chat/messages/{id}", methods: [GET], access: PERMIT_ALL }
+      - { pattern: /api/chat/messages,        methods: [GET], access: PERMIT_ALL }
+
+      - { pattern: "/api/users/{userId}/subscriptions", methods: [GET], access: PERMIT_ALL }
+      - { pattern: "/api/users/{userId}/subscribers", methods: [GET], access: PERMIT_ALL }
+
       # ---------------------------
       # 認証必須（既定）
       # ---------------------------
@@ -55,10 +64,32 @@ app:
       - { pattern: "/api/livestreams/{liveStreamId}/categories",          methods: [POST, PUT], access: AUTHENTICATED }
       - { pattern: "/api/livestreams/{liveStreamId}/categories/{categoryId}", methods: [DELETE], access: AUTHENTICATED }
 
+      # TagController（一覧・取得は公開）
+      - { pattern: /api/tags,        methods: [GET],           access: PERMIT_ALL }
+      - { pattern: "/api/tags/{id}", methods: [GET],           access: PERMIT_ALL }
+
+      # Video × Tag 関連操作（認証必須）
+      - { pattern: "/api/videos/{videoId}/tags",         methods: [POST, PUT],  access: AUTHENTICATED }
+      - { pattern: "/api/videos/{videoId}/tags/{tagId}", methods: [DELETE],     access: AUTHENTICATED }
+
+      # LiveStream × Tag 関連操作（認証必須）
+      - { pattern: "/api/livestreams/{liveStreamId}/tags",         methods: [POST, PUT],  access: AUTHENTICATED }
+      - { pattern: "/api/livestreams/{liveStreamId}/tags/{tagId}", methods: [DELETE],     access: AUTHENTICATED }
+
+      # ChatMessage（投稿は認証）
+      - { pattern: /api/chat/messages, methods: [POST], access: AUTHENTICATED }
+
+      # Subscription（フォロー関連）
+      - { pattern: /api/subscriptions, methods: [POST, DELETE], access: AUTHENTICATED }
+
+      # Tag 管理系（管理者専用）
+      - { pattern: /api/tags,        methods: [POST],           access: HAS_ROLE, roles: [ADMIN] }
+      - { pattern: "/api/tags/{id}", methods: [PUT, DELETE],    access: HAS_ROLE, roles: [ADMIN] }
+
       # 例：管理者専用
       - { pattern: /api/admin/ping, methods: [GET], access: HAS_ROLE, roles: [ADMIN] }
       - { pattern: "/api/users/{id}/restore", methods: [PUT], access: HAS_ROLE, roles: [ADMIN] }
-      - { pattern: "/api/videos/{id}/restore", methods: [PUT], access: HAS_ROLE, roles: [ADMIN] }
+      - { pattern: "/api/videos/{id}/restore", methods: [POST], access: HAS_ROLE, roles: [ADMIN] }
       - { pattern: /api/categories,           methods: [POST], access: HAS_ROLE, roles: [ADMIN] }
       - { pattern: "/api/categories/{id}",    methods: [PUT, DELETE], access: HAS_ROLE, roles: [ADMIN] }
 
