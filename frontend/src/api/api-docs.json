@@ -1,0 +1,3779 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Streaming Site API",
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:9000",
+            "description": "Generated server url"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Tags",
+            "description": "タグ関連API"
+        },
+        {
+            "name": "Users",
+            "description": "ユーザー関連API"
+        },
+        {
+            "name": "Videos",
+            "description": "アーカイブ関連API"
+        },
+        {
+            "name": "Subscriptions",
+            "description": "フォロー関連API"
+        },
+        {
+            "name": "ChatMessages",
+            "description": "チャット関連API"
+        },
+        {
+            "name": "Categories",
+            "description": "カテゴリ関連API"
+        },
+        {
+            "name": "LiveStreams",
+            "description": "ライブ配信に関するAPI群"
+        }
+    ],
+    "paths": {
+        "/api/videos/{videoId}/tags": {
+            "put": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "動画のタグを置換",
+                "description": "指定動画のタグを丸ごと置換します（認証必須）",
+                "operationId": "replaceVideoTags",
+                "parameters": [
+                    {
+                        "name": "videoId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "動画にタグを追加",
+                "description": "指定動画にタグを追加します（認証必須）",
+                "operationId": "addTagsToVideo",
+                "parameters": [
+                    {
+                        "name": "videoId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/videos/{videoId}/categories": {
+            "put": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "動画のカテゴリを置換",
+                "description": "指定動画のカテゴリを丸ごと置換します（認証必須）",
+                "operationId": "replaceVideoCategory",
+                "parameters": [
+                    {
+                        "name": "videoId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "動画にカテゴリを追加",
+                "description": "指定動画にカテゴリを追加します（認証必須）",
+                "operationId": "addCategoriesToVideo",
+                "parameters": [
+                    {
+                        "name": "videoId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/videos/{id}": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "idで特定の動画を検索",
+                "description": "公開/非公開いずれも取得ポリシーはサービス層で判定",
+                "operationId": "getVideo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "動画ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VideoResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            },
+            "put": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "idで特定の動画を更新",
+                "description": "Update 用（要ログイン）",
+                "operationId": "updateVideo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "動画ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/VideoUpdateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VideoResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            },
+            "delete": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "idで特定の動画を削除",
+                "description": "Delete 用（要ログイン）",
+                "operationId": "deleteVideo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "動画ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/users/{id}/restore": {
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "ユーザー復元",
+                "description": "論理削除されたユーザーを復元します",
+                "operationId": "restoreUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/me": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "自分のユーザー情報取得",
+                "description": "ログイン中のユーザーの情報を取得します",
+                "operationId": "getCurrentUser",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "ユーザー情報更新",
+                "description": "ログイン中のユーザーのプロフィール情報を更新します",
+                "operationId": "updateUser",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserUpdateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "ユーザー削除",
+                "description": "ログイン中のユーザーを削除します",
+                "operationId": "deleteUser",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/me/preferences": {
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "環境設定更新",
+                "description": "タイムゾーン・言語・誕生日を更新します",
+                "operationId": "updatePreferences",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PreferenceUpdateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/me/phone": {
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "電話番号変更",
+                "description": "電話番号を変更します",
+                "operationId": "updatePhoneNumber",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PhoneNumberUpdateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tags/{id}": {
+            "get": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "タグ取得",
+                "description": "IDでタグを1件取得します（公開）",
+                "operationId": "getTag",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TagResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            },
+            "put": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "タグ更新",
+                "description": "タグ名・説明を更新します（管理者）",
+                "operationId": "updateTag",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TagUpdateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TagResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            },
+            "delete": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "タグ削除",
+                "description": "タグを削除します（管理者）",
+                "operationId": "deleteTag",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/livestreams/{liveStreamId}/tags": {
+            "put": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "ライブ配信のタグを置換",
+                "description": "指定ライブ配信のタグを丸ごと置換します（認証必須）",
+                "operationId": "replaceLiveStreamTags",
+                "parameters": [
+                    {
+                        "name": "liveStreamId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "ライブ配信にタグを追加",
+                "description": "指定ライブ配信にタグを追加します（認証必須）",
+                "operationId": "addTagsToLiveStream",
+                "parameters": [
+                    {
+                        "name": "liveStreamId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/livestreams/{liveStreamId}/categories": {
+            "put": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "ライブ配信のカテゴリを置換",
+                "description": "指定ライブ配信のカテゴリを丸ごと置換します（認証必須）",
+                "operationId": "replaceLiveStreamCategory",
+                "parameters": [
+                    {
+                        "name": "liveStreamId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "ライブ配信にカテゴリを追加",
+                "description": "指定ライブ配信にカテゴリを追加します（認証必須）",
+                "operationId": "addCategoriesToLiveStream",
+                "parameters": [
+                    {
+                        "name": "liveStreamId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/live-streams/{id}": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ配信詳細取得",
+                "description": "指定IDのライブ配信情報を取得（公開/非公開の公開可否はサービス層で判定）",
+                "operationId": "getLiveStreamById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            },
+            "put": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ配信情報更新",
+                "description": "タイトル・説明・サムネイル等を更新（要ログイン）",
+                "operationId": "updateLiveStream",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LiveStreamUpdateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            },
+            "delete": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ配信削除",
+                "description": "指定配信の削除（要ログイン）",
+                "operationId": "deleteLiveStream",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/live-streams/{id}/reschedule": {
+            "put": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ配信スケジュール更新",
+                "description": "予定日時やステータスを更新（延期/変更に使用・要ログイン）",
+                "operationId": "rescheduleLiveStream",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LiveStreamReSchedul"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/categories/{id}": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "カテゴリ取得",
+                "description": "IDでカテゴリを1件取得します（公開）",
+                "operationId": "getCategory",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CategoryResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            },
+            "put": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "カテゴリ更新",
+                "description": "カテゴリ名・説明を更新します（管理者）",
+                "operationId": "updateCategory",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoryUpdateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CategoryResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            },
+            "delete": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "カテゴリ削除",
+                "description": "カテゴリを削除します（管理者）",
+                "operationId": "deleteCategory",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/videos/{id}/restore": {
+            "post": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "削除済み動画の復元",
+                "description": "論理削除からの復元（管理者想定）",
+                "operationId": "restoreVideo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VideoResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/videos/upload": {
+            "post": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "動画をアップロード",
+                "description": "Create 用（要ログイン）",
+                "operationId": "createVideo",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/VideoCreateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VideoResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/users/register": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "ユーザー登録",
+                "description": "新しいユーザーを登録します",
+                "operationId": "createUser",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRegisterRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/users/me/remember-token": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Remember Token 発行",
+                "description": "RememberTokenを発行します",
+                "operationId": "issueRememberToken",
+                "parameters": [
+                    {
+                        "name": "duration",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "PT15M"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/me/password": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "パスワード変更",
+                "description": "古いパスワードと新しいパスワードを指定して変更します",
+                "operationId": "changePassword",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PasswordChangeRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/me/email": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "メールアドレス変更",
+                "description": "新しいメールアドレスに変更します",
+                "operationId": "changeEmail",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EmailChangeRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/login": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "ユーザーログイン",
+                "description": "メールアドレスとパスワードでログインし、JWTトークンを返します",
+                "operationId": "login",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/tags": {
+            "get": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "タグ検索",
+                "description": "名称の部分一致でタグを検索します（公開）",
+                "operationId": "searchTags",
+                "parameters": [
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "maxLength": 100,
+                            "minLength": 0,
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageTagResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            },
+            "post": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "タグ作成",
+                "description": "新しいタグを作成します（管理者）",
+                "operationId": "createTag",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TagCreateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TagResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/subscriptions": {
+            "post": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "フォロー登録",
+                "description": "ユーザーをフォローします（認証必須）",
+                "operationId": "createSubscription",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SubscriptionCreateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SubscriptionResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "フォロー解除",
+                "description": "ユーザーのフォローを解除します（認証必須）",
+                "operationId": "removeSubscription",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SubscriptionRemoveRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/live-streams": {
+            "post": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ配信作成",
+                "description": "新規ライブ配信を作成。ストリームキーは自動生成（要ログイン）",
+                "operationId": "createLiveStream",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LiveStreamCreateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/live-streams/{id}/open": {
+            "post": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ開始",
+                "description": "配信IDのステータスを LIVE に変更（要ログイン）",
+                "operationId": "openLiveStream",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/live-streams/{id}/close": {
+            "post": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ終了",
+                "description": "ステータスを 終了 に変更（要ログイン）",
+                "operationId": "closeLiveStream",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/live-streams/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブキャンセル",
+                "description": "ステータスを キャンセル に変更（要ログイン）",
+                "operationId": "cancelLiveStream",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/messages": {
+            "get": {
+                "tags": [
+                    "ChatMessages"
+                ],
+                "summary": "チャットメッセージ検索",
+                "description": "配信IDやユーザーID、キーワードでチャットメッセージを検索します（公開）",
+                "operationId": "searchMessages",
+                "parameters": [
+                    {
+                        "name": "liveStreamId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "maxLength": 100,
+                            "minLength": 0,
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageChatMessageResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            },
+            "post": {
+                "tags": [
+                    "ChatMessages"
+                ],
+                "summary": "チャットメッセージ投稿",
+                "description": "ライブ配信にチャットメッセージを投稿します（認証必須）",
+                "operationId": "createMessage",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChatMessageCreateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatMessageResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/categories": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "カテゴリ検索",
+                "description": "名称の部分一致でカテゴリを検索します（公開）",
+                "operationId": "searchCategories",
+                "parameters": [
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "maxLength": 100,
+                            "minLength": 0,
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageCategoryResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            },
+            "post": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "カテゴリ作成",
+                "description": "新しいカテゴリを作成します（管理者）",
+                "operationId": "createCategory",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoryCreateRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CategoryResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/videos/{id}/views": {
+            "patch": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "動画の再生数をカウントアップ",
+                "description": "再生イベント用（公開エンドポイント想定）",
+                "operationId": "incrementViews",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/videos/{id}/unpublish": {
+            "patch": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "動画を非公開にする",
+                "description": "公開済みを非公開へ戻す（要ログイン）",
+                "operationId": "unpublishVideo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/videos/{id}/publish": {
+            "patch": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "動画を公開状態にする",
+                "description": "公開日時を指定し公開（要ログイン）",
+                "operationId": "publishVideo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "publishedAt",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/videos/user/{userId}": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "特定ユーザーの公開動画一覧",
+                "description": "ユーザーIDの公開動画をページング取得",
+                "operationId": "getPublicVideosByUser",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ユーザーID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "description": "ページング情報",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagePublicVideoResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/videos/search": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "公開動画を検索",
+                "description": "タイトル部分一致・viewsCount/publishedAt ソート・ページング対応",
+                "operationId": "searchPublicVideos",
+                "parameters": [
+                    {
+                        "name": "searchRequest",
+                        "in": "query",
+                        "description": "検索条件",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/SearchRequestDTO"
+                        }
+                    },
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "description": "ページング情報",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagePublicVideoResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/videos/recent": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "新着動画一覧",
+                "description": "公開日時の新しい順",
+                "operationId": "getRecentVideos",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "description": "ページング情報",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagePublicVideoResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/videos/popular": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "人気動画一覧",
+                "description": "再生回数順の公開動画一覧",
+                "operationId": "getPopularVideos",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "description": "ページング情報",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagePublicVideoResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/videos/my": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "自分の動画一覧を取得",
+                "description": "マイアーカイブ一覧API（要ログイン）",
+                "operationId": "getMyVideos",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "description": "ページング情報",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageVideoResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/users/{userId}/subscriptions": {
+            "get": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "フォロー一覧取得",
+                "description": "指定ユーザーがフォローしているユーザー一覧を取得します（公開）",
+                "operationId": "getSubscriptionsBySubscriber",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SubscriptionResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{userId}/subscribers": {
+            "get": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "フォロワー一覧取得",
+                "description": "指定ユーザーをフォローしているユーザー一覧を取得します（公開）",
+                "operationId": "getSubscriptionsByTarget",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SubscriptionResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{id}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "operationId": "getUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/me/remember-token/verify": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Remember Token 検証",
+                "description": "RememberTokenが有効か検証します",
+                "operationId": "verifyRememberToken",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/live-streams/user/{userId}": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ユーザー別ライブ一覧取得",
+                "description": "指定ユーザーIDに紐づくライブ配信一覧（ページング）",
+                "operationId": "getLiveStreamsByUser",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ユーザーID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageLiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/live-streams/user/{userId}/status": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ユーザー＆ステータス別ライブ一覧",
+                "description": "ユーザーID×配信ステータスで絞り込み（ページング）",
+                "operationId": "getLiveStreamsByUserAndStatus",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ユーザーID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "配信ステータス",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "SCHEDULED",
+                                "LIVE",
+                                "ENDED",
+                                "CANCELLED"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageLiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/live-streams/statuses": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "複数ステータスのライブ一覧",
+                "description": "複数ステータスでフィルタリング（ページング）",
+                "operationId": "getLiveStreamsByStatuses",
+                "parameters": [
+                    {
+                        "name": "statuses",
+                        "in": "query",
+                        "description": "配信ステータスのリスト",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "SCHEDULED",
+                                    "LIVE",
+                                    "ENDED",
+                                    "CANCELLED"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageLiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/live-streams/status": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ステータス別ライブ一覧",
+                "description": "配信ステータスに基づく配信一覧（ページング）",
+                "operationId": "getLiveStreamsByStatus",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "配信ステータス",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "SCHEDULED",
+                                "LIVE",
+                                "ENDED",
+                                "CANCELLED"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageLiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/live-streams/search": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "タイトル検索付きライブ一覧",
+                "description": "タイトル部分一致＋ステータス指定（ページング）",
+                "operationId": "getLiveStreamsByTitleAndStatus",
+                "parameters": [
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "description": "タイトルキーワード",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "配信ステータス",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "SCHEDULED",
+                                "LIVE",
+                                "ENDED",
+                                "CANCELLED"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Zero-based page index (0..N)",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The size of the page to be returned",
+                        "required": false,
+                        "schema": {
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageLiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/live-streams/key/{streamKey}": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "StreamKeyから配信取得",
+                "description": "配信用の Stream Key を指定して取得",
+                "operationId": "getLiveStreamByStreamKey",
+                "parameters": [
+                    {
+                        "name": "streamKey",
+                        "in": "path",
+                        "description": "ストリームキー",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStreamResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/hello/public": {
+            "get": {
+                "tags": [
+                    "hello-controller"
+                ],
+                "operationId": "publicHello",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/hello/private": {
+            "get": {
+                "tags": [
+                    "hello-controller"
+                ],
+                "operationId": "privateHello",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat/messages/{id}": {
+            "get": {
+                "tags": [
+                    "ChatMessages"
+                ],
+                "summary": "チャットメッセージ取得",
+                "description": "IDでチャットメッセージを1件取得します（公開）",
+                "operationId": "getMessage",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatMessageResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/admin/ping": {
+            "get": {
+                "tags": [
+                    "admin-ping-controller"
+                ],
+                "operationId": "ping",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/videos/{videoId}/tags/{tagId}": {
+            "delete": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "動画からタグを1つ外す",
+                "description": "指定動画から単一タグを解除します（認証必須）",
+                "operationId": "removeTagFromVideo",
+                "parameters": [
+                    {
+                        "name": "videoId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/videos/{videoId}/categories/{categoryId}": {
+            "delete": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "動画からカテゴリを1つ外す",
+                "description": "指定動画から単一カテゴリを解除します（認証必須）",
+                "operationId": "removeCategoryFromVideo",
+                "parameters": [
+                    {
+                        "name": "videoId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/livestreams/{liveStreamId}/tags/{tagId}": {
+            "delete": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "ライブ配信からタグを1つ外す",
+                "description": "指定ライブ配信から単一タグを解除します（認証必須）",
+                "operationId": "removeTagFromLiveStream",
+                "parameters": [
+                    {
+                        "name": "liveStreamId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/livestreams/{liveStreamId}/categories/{categoryId}": {
+            "delete": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "ライブ配信からカテゴリを1つ外す",
+                "description": "指定ライブ配信から単一カテゴリを解除します（認証必須）",
+                "operationId": "removeCategoryFromLiveStream",
+                "parameters": [
+                    {
+                        "name": "liveStreamId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "VideoUpdateRequestDTO": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "thumbnailPath": {
+                        "type": "string"
+                    },
+                    "visibility": {
+                        "type": "string",
+                        "enum": [
+                            "PUBLIC",
+                            "PRIVATE",
+                            "UNLISTED"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "UPLOADED",
+                            "ENCODING",
+                            "READY",
+                            "FAILED",
+                            "DELETED"
+                        ]
+                    }
+                },
+                "description": "動画更新のリクエストDTO"
+            },
+            "VideoResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "UserUpdateRequestDTO": {
+                "required": [
+                    "name"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 30,
+                        "minLength": 0,
+                        "type": "string"
+                    },
+                    "profileImagePath": {
+                        "maxLength": 1024,
+                        "minLength": 0,
+                        "type": "string"
+                    },
+                    "coverImagePath": {
+                        "maxLength": 1024,
+                        "minLength": 0,
+                        "type": "string"
+                    },
+                    "bio": {
+                        "maxLength": 1000,
+                        "minLength": 0,
+                        "type": "string"
+                    }
+                }
+            },
+            "UserResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "PreferenceUpdateRequestDTO": {
+                "required": [
+                    "language",
+                    "timezone"
+                ],
+                "type": "object",
+                "properties": {
+                    "timezone": {
+                        "type": "string"
+                    },
+                    "language": {
+                        "type": "string"
+                    },
+                    "birthday": {
+                        "type": "string",
+                        "format": "date"
+                    }
+                }
+            },
+            "PhoneNumberUpdateRequestDTO": {
+                "required": [
+                    "phoneNumber"
+                ],
+                "type": "object",
+                "properties": {
+                    "phoneNumber": {
+                        "pattern": "^0\\d{9,10}$",
+                        "type": "string"
+                    }
+                }
+            },
+            "TagUpdateRequestDTO": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 0,
+                        "type": "string"
+                    },
+                    "slug": {
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "type": "string"
+                    }
+                }
+            },
+            "TagResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "slug": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "LiveStreamUpdateRequestDTO": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "thumbnailPath": {
+                        "type": "string"
+                    }
+                }
+            },
+            "LiveStreamResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "LiveStreamReSchedul": {
+                "required": [
+                    "scheduledAt"
+                ],
+                "type": "object",
+                "properties": {
+                    "scheduledAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "SCHEDULED",
+                            "LIVE",
+                            "ENDED",
+                            "CANCELLED"
+                        ]
+                    }
+                }
+            },
+            "CategoryUpdateRequestDTO": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 0,
+                        "type": "string"
+                    },
+                    "description": {
+                        "maxLength": 500,
+                        "minLength": 0,
+                        "type": "string"
+                    }
+                }
+            },
+            "CategoryResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "VideoCreateRequestDTO": {
+                "required": [
+                    "title",
+                    "videoPath"
+                ],
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "videoPath": {
+                        "type": "string"
+                    },
+                    "thumbnailPath": {
+                        "type": "string"
+                    }
+                },
+                "description": "新規動画のリクエストDTO"
+            },
+            "UserRegisterRequestDTO": {
+                "required": [
+                    "email",
+                    "name",
+                    "password"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 30,
+                        "minLength": 0,
+                        "type": "string"
+                    },
+                    "email": {
+                        "maxLength": 320,
+                        "minLength": 0,
+                        "type": "string"
+                    },
+                    "password": {
+                        "maxLength": 2147483647,
+                        "minLength": 8,
+                        "type": "string"
+                    }
+                }
+            },
+            "PasswordChangeRequestDTO": {
+                "required": [
+                    "newPassword",
+                    "oldPassword"
+                ],
+                "type": "object",
+                "properties": {
+                    "oldPassword": {
+                        "type": "string"
+                    },
+                    "newPassword": {
+                        "type": "string"
+                    }
+                }
+            },
+            "EmailChangeRequestDTO": {
+                "required": [
+                    "newEmail"
+                ],
+                "type": "object",
+                "properties": {
+                    "newEmail": {
+                        "type": "string"
+                    }
+                }
+            },
+            "LoginRequestDTO": {
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            },
+            "LoginResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/UserResponseDTO"
+                    }
+                }
+            },
+            "TagCreateRequestDTO": {
+                "required": [
+                    "name"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 0,
+                        "type": "string"
+                    },
+                    "slug": {
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "type": "string"
+                    }
+                }
+            },
+            "SubscriptionCreateRequestDTO": {
+                "required": [
+                    "targetId"
+                ],
+                "type": "object",
+                "properties": {
+                    "subscriberId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "targetId": {
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                }
+            },
+            "SubscriptionResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "subscriberId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "targetId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "LiveStreamCreateRequestDTO": {
+                "required": [
+                    "title"
+                ],
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "thumbnailPath": {
+                        "type": "string"
+                    },
+                    "scheduledAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "ChatMessageCreateRequestDTO": {
+                "required": [
+                    "liveStreamId",
+                    "message"
+                ],
+                "type": "object",
+                "properties": {
+                    "liveStreamId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "userId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "message": {
+                        "maxLength": 500,
+                        "minLength": 0,
+                        "type": "string"
+                    }
+                }
+            },
+            "ChatMessageResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "liveStreamId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "userId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "CategoryCreateRequestDTO": {
+                "required": [
+                    "name"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 0,
+                        "type": "string"
+                    },
+                    "description": {
+                        "maxLength": 500,
+                        "minLength": 0,
+                        "type": "string"
+                    }
+                }
+            },
+            "Pageable": {
+                "type": "object",
+                "properties": {
+                    "page": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "PagePublicVideoResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PublicVideoResponseDTO"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SortObject"
+                        }
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageableObject": {
+                "type": "object",
+                "properties": {
+                    "paged": {
+                        "type": "boolean"
+                    },
+                    "pageNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "offset": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "sort": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SortObject"
+                        }
+                    },
+                    "unpaged": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PublicVideoResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "thumbnailPath": {
+                        "type": "string"
+                    },
+                    "viewsCount": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "uploader": {
+                        "$ref": "#/components/schemas/UploaderDTO"
+                    }
+                }
+            },
+            "SortObject": {
+                "type": "object",
+                "properties": {
+                    "direction": {
+                        "type": "string"
+                    },
+                    "nullHandling": {
+                        "type": "string"
+                    },
+                    "ascending": {
+                        "type": "boolean"
+                    },
+                    "property": {
+                        "type": "string"
+                    },
+                    "ignoreCase": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "UploaderDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "profileImagePath": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SearchRequestDTO": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string"
+                    },
+                    "sortBy": {
+                        "type": "string",
+                        "enum": [
+                            "PUBLISHED_AT",
+                            "VIEWS_COUNT"
+                        ]
+                    }
+                }
+            },
+            "PageVideoResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/VideoResponseDTO"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SortObject"
+                        }
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageTagResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TagResponseDTO"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SortObject"
+                        }
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageLiveStreamResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LiveStreamResponseDTO"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SortObject"
+                        }
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageChatMessageResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ChatMessageResponseDTO"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SortObject"
+                        }
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageCategoryResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CategoryResponseDTO"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SortObject"
+                        }
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "SubscriptionRemoveRequestDTO": {
+                "required": [
+                    "targetId"
+                ],
+                "type": "object",
+                "properties": {
+                    "subscriberId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "targetId": {
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}

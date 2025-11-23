@@ -49,5 +49,6 @@
       ]
     }
   },
-  "remoteUser": "front-dev"
+  "remoteUser": "front-dev",
+  "postAttachCommand": "sudo chown -R front-dev:front-dev /workspace/frontend"
 }
