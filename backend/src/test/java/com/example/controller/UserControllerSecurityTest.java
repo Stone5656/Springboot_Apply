@@ -219,34 +219,38 @@ class UserControllerSecurityTest {
          .andExpect(status().isUnauthorized());
     }
 
-    @ParameterizedTest(name = "POST /api/users/me/remember-token - {0}")
-    @MethodSource("authedCases")
-    void remember_issue_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
-      int s = mvc.perform(post("/api/users/me/remember-token").with(auth.get())
-                     .param("duration", "PT15M"))
-                 .andReturn().getResponse().getStatus();
+    /**
+     * POST /api/users/password/reset/request は認証なしで叩ける（401/403 にはならない）ことを確認
+     */
+    @Test
+    void password_reset_request_is_public() throws Exception {
+      int s = mvc.perform(
+              post("/api/users/forgot-password")
+                  .param("email", "user@example.com")
+            )
+            .andReturn()
+            .getResponse()
+            .getStatus();
+
+      // セキュリティ設定の観点では 401/403 にならなければ OK
       assertNot401Or403(s);
     }
 
+    /**
+     * POST /api/users/password/reset も認証なしで叩ける（401/403 にはならない）ことを確認
+     */
     @Test
-    void remember_issue_unauth_401() throws Exception {
-      mvc.perform(post("/api/users/me/remember-token").param("duration", "PT15M"))
-         .andExpect(status().isUnauthorized());
-    }
+    void password_reset_is_public() throws Exception {
+      int s = mvc.perform(
+              post("/api/users/reset-password")
+                  .param("token", "dummy-token")              // 形式だけ合わせる
+                  .param("password", "NewPassw0rd!")          // バリデーションを満たしそうな値
+            )
+            .andReturn()
+            .getResponse()
+            .getStatus();
 
-    @ParameterizedTest(name = "GET /api/users/me/remember-token/verify - {0}")
-    @MethodSource("authedCases")
-    void remember_verify_authed(String who, Supplier<RequestPostProcessor> auth) throws Exception {
-      int s = mvc.perform(get("/api/users/me/remember-token/verify").with(auth.get())
-                     .param("token", "dummy"))
-                 .andReturn().getResponse().getStatus();
       assertNot401Or403(s);
-    }
-
-    @Test
-    void remember_verify_unauth_401() throws Exception {
-      mvc.perform(get("/api/users/me/remember-token/verify").param("token", "dummy"))
-         .andExpect(status().isUnauthorized());
     }
   }
 

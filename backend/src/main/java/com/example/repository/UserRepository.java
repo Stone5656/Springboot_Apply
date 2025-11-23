@@ -28,4 +28,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Modifying
     @Query("UPDATE User u SET u.deletedAt = NULL WHERE u.id = :id")
     void restoreById(@Param("id") UUID id);
+
+    /**
+     * パスワードリセットトークンハッシュからユーザーを取得します。
+     *
+     * <p>削除済みユーザーにはトークンを発行しない前提のため、
+     * 論理削除されたレコードは対象外です。
+     */
+    Optional<User> findByPasswordResetTokenHash(String passwordResetTokenHash);
 }

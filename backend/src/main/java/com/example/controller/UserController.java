@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.time.Duration;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -126,30 +125,34 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    /** Remember Token 発行 */
-    @Operation(summary = "Remember Token 発行", description = "RememberTokenを発行します")
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/me/remember-token")
-    public ResponseEntity<String> issueRememberToken(
-        @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal principal,
-        @RequestParam(defaultValue = "PT15M") String duration
+    /** パスワードリセット要求 */
+    @Operation(
+        summary = "パスワードリセット要求",
+        description = "指定されたメールアドレス宛にパスワードリセット用のメールを送信します（メールアドレスの存在有無はレスポンスに反映しません）"
+    )
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> resetPasswordRequest(
+        @RequestParam("email") String email
     ) {
-        Duration validDuration = Duration.parse(duration);
-        String token = userService.issueRememberToken(principal.getId(), validDuration);
-        return ResponseEntity.ok(token);
+        // メールアドレスが存在しなくても、必ず同じレスポンスを返す
+        userService.requestPasswordReset(email);
+        return ResponseEntity.ok().build();
     }
 
-    /** Remember Token 検証 */
-    @Operation(summary = "Remember Token 検証", description = "RememberTokenが有効か検証します")
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/me/remember-token/verify")
-    public ResponseEntity<Boolean> verifyRememberToken(
-        @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal principal,
-        @RequestParam String token
+    /** パスワードリセット実行 */
+    @Operation(
+        summary = "パスワードリセット実行",
+        description = "メールで送信されたトークンと新しいパスワードを用いてパスワードを再設定します"
+    )
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(
+        @RequestParam("token") String token,
+        @RequestParam("password") String newPassword
     ) {
-        boolean valid = userService.verifyRememberToken(principal.getId(), token);
-        return ResponseEntity.ok(valid);
+        userService.resetPassword(token, newPassword);
+        return ResponseEntity.ok().build();
     }
+
 
     // ===== Preferences / Contact（本人の設定: 要認証） =====
 

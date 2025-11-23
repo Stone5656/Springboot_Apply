@@ -9,6 +9,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -17,7 +20,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +37,7 @@ import org.springframework.util.Assert;
  */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@ToString(exclude = {"password", "rememberToken", "primaryEmail", "phoneNumber"})
+@ToString(exclude = {"password", "passwordResetTokenHash", "primaryEmail", "phoneNumber"})
 @Entity
 @SQLDelete(sql = "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Filter(name = "activeFilter", condition = "deleted_at IS NULL")
@@ -61,7 +63,7 @@ public class User extends AbstractSoftDeletableEntity {
     private List<UserEmail> emails = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY, optional = true,
-          cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+          cascade = {CascadeType.ALL, CascadeType.MERGE},
           orphanRemoval = true)
     @JoinColumn(name = "primary_email_id", nullable = true, unique = true)
     private UserEmail primaryEmail;
@@ -76,14 +78,14 @@ public class User extends AbstractSoftDeletableEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
-    /** リメンバートークン */
+    /** パスワードリセットトークン（ハッシュ） */
     @Size(max = 255)
-    @Column(name = "remember_token")
-    private String rememberToken;
+    @Column(name = "password_reset_token_hash")
+    private String passwordResetTokenHash;
 
-    /** リメンバートークン有効期限 */
-    @Column(name = "remember_token_expires_at")
-    private LocalDateTime rememberTokenExpiresAt;
+    /** パスワードリセットトークン有効期限 */
+    @Column(name = "password_reset_token_expires_at")
+    private LocalDateTime passwordResetTokenExpiresAt;
 
     /** プロフィール画像のファイルパス */
     @Size(max = 1024)
@@ -209,7 +211,7 @@ public class User extends AbstractSoftDeletableEntity {
             email.setUser(this);
         }
     }
-    
+
     public void addEmail(UserEmail email) {
         if (email == null) return;
         // 同一メールの重複追加を避ける（equals/hashCode未実装でも動くようemailで判定）
@@ -306,27 +308,59 @@ public class User extends AbstractSoftDeletableEntity {
     }
 
     /**
-     * リメンバートークンを発行します。
+     * パスワードリセットトークンを発行します。
      *
-     * @param validDuration 有効期限の期間（null不可）
-     * @throws IllegalArgumentException 有効期限がnullの場合
+     * <p>発行されるトークン自体（rawToken）はメールリンクなどで一時的にクライアントへ送られますが、
+     * DB にはハッシュのみを保存します。
+     *
+     * @param rawToken 生のトークン文字列
+     * @param validDuration 有効期限
      */
-    public void issueRememberToken(Duration validDuration) {
-        Assert.notNull(validDuration, "有効期間が指定されていません");
-        this.rememberToken = UUID.randomUUID().toString();
-        this.rememberTokenExpiresAt = LocalDateTime.now().plus(validDuration);
+    public void issuePasswordResetToken(String rawToken, Duration validDuration) {
+        if (rawToken == null || rawToken.isBlank()) {
+            throw new IllegalArgumentException("rawToken must not be blank");
+        }
+        if (validDuration == null) {
+            throw new IllegalArgumentException("validDuration must not be null");
+        }
+        this.passwordResetTokenHash = hashPasswordResetToken(rawToken);
+        this.passwordResetTokenExpiresAt = LocalDateTime.now().plus(validDuration);
     }
 
     /**
-     * 渡されたトークンが有効かどうかを検証します。
+     * パスワードリセットトークンのハッシュ値を計算します。
      *
-     * @param token トークン文字列（null不可）
-     * @return true: 有効 / false: 無効
+     * <p>実稼働では PBKDF2 や bcrypt などの KDF を使うのが望ましいですが、
+     * ここでは依存関係を増やさないため SHA-256 を利用しています。
      */
-    public boolean verifyRememberToken(String token) {
-        return this.rememberToken != null && token != null && this.rememberToken.equals(token)
-                && this.rememberTokenExpiresAt != null
-                && this.rememberTokenExpiresAt.isAfter(LocalDateTime.now());
+    public static String hashPasswordResetToken(String rawToken) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(rawToken.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(digest.length * 2);
+            for (byte b : digest) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 algorithm is not available", e);
+        }
+    }
+
+    /**
+     * パスワードリセットトークンが有効期限切れかどうかを返します。
+     */
+    public boolean isPasswordResetTokenExpired() {
+        return this.passwordResetTokenExpiresAt == null
+                || this.passwordResetTokenExpiresAt.isBefore(LocalDateTime.now());
+    }
+
+    /**
+     * パスワードリセットトークンを無効化します（一度使ったら必ず呼ぶ想定）。
+     */
+    public void clearPasswordResetToken() {
+        this.passwordResetTokenHash = null;
+        this.passwordResetTokenExpiresAt = null;
     }
 
     /**

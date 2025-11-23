@@ -6,6 +6,8 @@ import com.example.enums.UserRole;
 import com.example.repository.UserRepository;
 import com.example.security.JwtUtils;
 import java.time.Duration;
+import java.util.Base64;
+import java.security.SecureRandom;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,9 +25,12 @@ public class UserService {
 
     private static final String USER_NOT_FOUND = "ユーザーが見つかりません";
 
+    private static final SecureRandom secureRandom = new SecureRandom();
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final MailService mailService;
 
     // =========================================================
     // =============== Ⅰ. 未認証OK（Public） ==================
@@ -140,25 +145,78 @@ public class UserService {
     }
 
     /**
-     * リメンバートークン発行（本人）。
+     * パスワードリセット要求（未ログイン / forgot-password 用）。
+     *
+     * <メールアドレスの存在有無にかかわらず、呼び出し元は成功レスポンスを返す想定です。
+     * アカウントが見つかった場合のみ、内部的にトークン発行とメール送信処理を行います。
      */
     @Transactional
-    public String issueRememberToken(UUID userId, Duration duration) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
-        user.issueRememberToken(duration);
+    public void requestPasswordReset(String rawEmail) {
+        if (!StringUtils.hasText(rawEmail)) {
+            throw new IllegalArgumentException("メールアドレスが空です");
+        }
+
+        userRepository.findByPrimaryEmailEmailIgnoreCase(rawEmail)
+            .ifPresent(user -> {
+                String rawToken = generateSecureToken();
+
+                // DB にはハッシュ + 有効期限のみ保存する
+                user.issuePasswordResetToken(rawToken, Duration.ofMinutes(30));
+
+                userRepository.save(user);
+
+                // メール送信
+                mailService.sendPasswordResetMail(user, rawToken);
+            });
+
+        // メールアドレスが存在しない場合でも何もしない
+        // （存在有無を推測されないようにするため）
+    }
+
+        /**
+     * パスワードリセット実行（reset-password 用）。
+     *
+     * @param rawToken       生のトークン（メールリンクに含まれていた値）
+     * @param newRawPassword 新しい平文パスワード
+     */
+    @Transactional
+    public void resetPassword(String rawToken, String newRawPassword) {
+        if (!StringUtils.hasText(rawToken)) {
+            throw new IllegalArgumentException("トークンが空です");
+        }
+        if (!StringUtils.hasText(newRawPassword)) {
+            throw new IllegalArgumentException("新しいパスワードが空です");
+        }
+
+        // トークンハッシュでユーザーを特定
+        String tokenHash = User.hashPasswordResetToken(rawToken);
+        User user = userRepository.findByPasswordResetTokenHash(tokenHash)
+            .orElseThrow(() -> new IllegalArgumentException("無効なトークンです"));
+
+        if (user.isPasswordResetTokenExpired()) {
+            throw new IllegalArgumentException("トークンの有効期限が切れています");
+        }
+
+        // パスワードを更新し、トークンは使い捨てにする
+        user.hashAndSetPassword(newRawPassword, passwordEncoder);
+        user.clearPasswordResetToken();
+
         userRepository.save(user);
-        return user.getRememberToken();
     }
 
     /**
-     * リメンバートークン検証（本人）。
+     * パスワードリセットや remember-me 用のトークンに利用する乱数トークンを生成します。
+     *
+     * <p>OWASP Forgot Password Cheat Sheet では、少なくとも 128bit 以上のエントロピーを
+     * 持つ予測不能なトークンを推奨しています。
      */
-    public boolean verifyRememberToken(UUID userId, String token) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
-        return user.verifyRememberToken(token);
+    private String generateSecureToken() {
+        byte[] bytes = new byte[32]; // 256bit
+        secureRandom.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
+
+
 
     /**
      * ログイン成功記録（本人）。

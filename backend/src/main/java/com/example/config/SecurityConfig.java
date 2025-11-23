@@ -100,7 +100,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         var config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4000"));
+        config.setAllowedOrigins(List.of(
+            "http://localhost:4000",
+            "http://127.0.0.1:4000",
+            "http://0.0.0.0:4000"
+        ));
         // OPTIONS を含める（プリフライト用）
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "Access-Control-Request-Headers"));
